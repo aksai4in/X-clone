@@ -1,15 +1,10 @@
 import Link from "next/link";
 import { FaApple } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
+import GoogleButton from "./authButtons";
 export default function LoginOptions() {
   return (
     <div>
-      <button
-        className={`flex w-80 hover:bg-gray-200 transition duration-200 py-2 items-center border border-gray-300 justify-center gap-2 my-2 rounded-full`}
-      >
-        <FcGoogle className="text-2xl" />
-        <span className="text-1xl medium">Sign up with Google</span>
-      </button>
+      <GoogleButton />
       <button
         className={`flex w-80 hover:bg-gray-200 transition duration-200 py-2 items-center border border-gray-300 justify-center gap-2 my-2 rounded-full`}
       >
@@ -21,7 +16,7 @@ export default function LoginOptions() {
         className={`flex w-80 hover:bg-twitter-dark transition duration-200 py-2 items-center bg-twitter justify-center gap-2 my-2 rounded-full`}
       >
         <span className="text-1xl font-semibold text-white">
-          Create sccount
+          Create account
         </span>
       </button>
       <div className={`text-xs text-gray-500 w-80`}>
