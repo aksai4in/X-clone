@@ -11,18 +11,18 @@ export const metadata: Metadata = {
   description: "X clone is a clone of X, former Twitter.",
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
+export default async function RootLayout(props: {
+  auth: React.ReactNode;
   children: React.ReactNode;
-}>) {
+}) {
   const session = await getServerSession();
   return (
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider session={session}>
           <AuthButton />
-          {children}
+          {props.children}
+          {props.auth}
         </SessionProvider>
       </body>
     </html>

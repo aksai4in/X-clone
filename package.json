@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.1.1",
+    "@mui/material-nextjs": "^5.15.7",
     "@vercel/postgres": "^0.7.2",
     "bcrypt": "^5.1.1",
     "mysql2": "^3.9.1",

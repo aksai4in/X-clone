@@ -1,10 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials"; // Import Credentials from next-auth/providers
 import { User } from "@/app/lib/definitions";
 import { sql } from "@vercel/postgres";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+
 async function getUser(email: string): Promise<User | undefined> {
   try {
     const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
@@ -14,7 +15,15 @@ async function getUser(email: string): Promise<User | undefined> {
     throw new Error("Failed to fetch user.");
   }
 }
-export const authOptions = {
+export const authOptions: AuthOptions = {
+  callbacks: {
+    async redirect({ url, baseUrl }) {
+      console.log("url", url);
+      console.log("baseUrl", baseUrl);
+
+      return baseUrl + "/home/";
+    },
+  },
   providers: [
     Credentials({
       name: "Credentials",

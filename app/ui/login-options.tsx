@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { FaApple } from "react-icons/fa";
-import GoogleButton from "./authButtons";
-export default function LoginOptions() {
+import { AppleButton, GoogleButton } from "./authButtons";
+import Modal from "./modal";
+type SearchParamProps = {
+  searchParams: Record<string, string> | null | undefined;
+};
+
+export default function LoginOptions({ searchParams }: SearchParamProps) {
+  const show = searchParams?.show;
   return (
-    <div>
-      <GoogleButton />
-      <button
-        className={`flex w-80 hover:bg-gray-200 transition duration-200 py-2 items-center border border-gray-300 justify-center gap-2 my-2 rounded-full`}
-      >
-        <FaApple className="text-2xl" />
-        <span className="text-1xl font-semibold">Sign up with Apple</span>
-      </button>
+    <>
+      <GoogleButton name="Sign up with Google" />
+      <AppleButton name="Sign up with Apple" />
       <span className={`w-80 flex justify-center`}>or</span>
       <button
         className={`flex w-80 hover:bg-twitter-dark transition duration-200 py-2 items-center bg-twitter justify-center gap-2 my-2 rounded-full`}
@@ -50,11 +51,6 @@ export default function LoginOptions() {
           <br></br>Already have an account?
         </span>
       </div>
-      <button
-        className={`flex w-80 hover:bg-twitter-light transition duration-200 py-2 items-center border border-gray-300 justify-center gap-2 my-2 rounded-full`}
-      >
-        <span className="text-1xl font-semibold text-twitter">Sign in</span>
-      </button>
-    </div>
+    </>
   );
 }
