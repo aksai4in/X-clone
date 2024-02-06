@@ -3,12 +3,19 @@ import Footer from "./ui/footer";
 import LoginOptions from "./ui/login-options";
 import Link from "next/link";
 import { FaXTwitter } from "react-icons/fa6";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 
 type SearchParamProps = {
   searchParams: Record<string, string> | null | undefined;
 };
 
-export default function Home({ searchParams }: SearchParamProps) {
+export default async function Home({ searchParams }: SearchParamProps) {
+  const session = await getServerSession();
+  if (session?.user?.name) {
+    redirect("/home");
+  }
   return (
     <div className=" flex flex-col h-screen relative">
       <div className="flex flex-row flex-grow items-center justify-center">

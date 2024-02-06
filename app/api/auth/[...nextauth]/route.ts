@@ -5,6 +5,7 @@ import { User } from "@/app/lib/definitions";
 import { sql } from "@vercel/postgres";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
@@ -23,6 +24,9 @@ export const authOptions: AuthOptions = {
 
       return baseUrl + "/home/";
     },
+  },
+  pages: {
+    signIn: "/",
   },
   providers: [
     Credentials({

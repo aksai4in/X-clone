@@ -16,6 +16,7 @@
     "@mui/material-nextjs": "^5.15.7",
     "@vercel/postgres": "^0.7.2",
     "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.9.1",
     "next": "14.1.0",
     "next-auth": "^4.24.5",

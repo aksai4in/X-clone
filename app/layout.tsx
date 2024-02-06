@@ -20,7 +20,7 @@ export default async function RootLayout(props: {
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider session={session}>
-          <AuthButton />
+          {/* <AuthButton /> */}
           {props.children}
           {props.auth}
         </SessionProvider>

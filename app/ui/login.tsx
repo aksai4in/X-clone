@@ -3,11 +3,12 @@ import { FaXTwitter } from "react-icons/fa6";
 import { AppleButton, CloseButton, GoogleButton } from "./authButtons";
 import { AiOutlineClose } from "react-icons/ai";
 import Link from "next/link";
-import { ChangeEventHandler, FormEvent, useState } from "react";
+import { ChangeEventHandler, FormEvent, Suspense, useState } from "react";
 import { existsUserWithEmail } from "../lib/actions";
 import { setLazyProp } from "next/dist/server/api-utils";
 import LoginSceleton from "./skeletons";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -26,14 +27,14 @@ export default function Login() {
       setEmail(formData.get("email") as string);
     }
   };
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = (e: any) => {
     if (e.target.value) {
       setPassword(e.target.value);
     } else {
       setPassword("");
     }
   };
-  const changeVisibility = (e) => {
+  const changeVisibility = (e: any) => {
     e.preventDefault();
     setHidePassword(!hidePassword);
     setTimeout(function () {
@@ -48,7 +49,15 @@ export default function Login() {
       passwordInput.focus();
     }, 0);
   };
-
+  const login = async (e: any) => {
+    e.preventDefault();
+    await signIn("credentials", {
+      email: email,
+      password: password,
+      callbackUrl: "/home",
+    });
+    console.log("login");
+  };
   return (
     <>
       {loading && <LoginSceleton />}
@@ -70,7 +79,7 @@ export default function Login() {
                   <div className="relative py-2">
                     <input
                       disabled
-                      id="disbaledEmail"
+                      id="email"
                       name="email"
                       type="text"
                       value={email}
@@ -120,6 +129,7 @@ export default function Login() {
                     </span>
                   </div>
                   <button
+                    onClick={login}
                     disabled={!password}
                     className="disabled:bg-[#86898c] bottom-0 mt-auto flex w-full  text-white hover:bg-gray-800 transition duration-200 py-3 items-center bg-black justify-center gap-2 my-2 rounded-full"
                   >

@@ -1,6 +1,14 @@
+import { useSession } from "next-auth/react";
 import Login from "../ui/login";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { Suspense } from "react";
 
-export default function Page() {
+export default async function Page() {
+  const session = await getServerSession();
+  if (session?.user?.name) {
+    redirect("/home");
+  }
   return (
     <div
       // ref={overlay}

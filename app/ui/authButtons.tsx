@@ -1,5 +1,5 @@
 "use client";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AiOutlineClose } from "react-icons/ai";
@@ -11,6 +11,7 @@ export function GoogleButton({ name }: { name: String }) {
   const handleClick = async () => {
     await signIn("google");
   };
+
   return (
     <button
       onClick={handleClick}
