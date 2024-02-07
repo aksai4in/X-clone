@@ -6,3 +6,10 @@ export type User = {
   date_of_birth: string;
   date_of_joinign: string;
 };
+
+export type Post = {
+  post_id: number;
+  username: string;
+  content: string;
+  timestamp: string;
+};

@@ -1,13 +1,10 @@
-import Explore from "../ui/explore/explore";
 import SideNav from "../ui/home/side-nav";
 
-export default function Page() {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen">
       <SideNav />
-      <Explore />
-
-      <div></div>
+      {children}
     </div>
   );
 }

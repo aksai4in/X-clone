@@ -22,7 +22,7 @@ export default function ProfileButton() {
       >
         <Avatar
           sx={{ width: 35, height: 35 }}
-          alt="Remy Sharp"
+          alt="avatar"
           src={data?.user?.image as string}
         />
         <div className="">
