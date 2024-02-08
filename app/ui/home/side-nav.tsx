@@ -77,9 +77,9 @@ export default function SideNav() {
     },
   ];
   return (
-    <div className=" border w-1/4 flex justify-end ">
+    <div className="sticky top-0 border w-full h-screen max-w-[400px] flex justify-end ">
       <div className=" flex flex-col">
-        <div className=" w-[250px]">
+        <div className=" xl:w-[250px]">
           <Link
             href={encodeURI("/home")}
             className="w-[50px] h-[50px] flex  group justify-center items-center"
@@ -97,6 +97,7 @@ export default function SideNav() {
               console.log(pathname, path);
               return (
                 <Link
+                  key={link.name}
                   href={encodeURI(link.url)}
                   className="w-[50px] h-[50px] xl:w-full flex group xl:justify-start justify-center items-center"
                 >
@@ -124,7 +125,7 @@ export default function SideNav() {
             })}
           </div>
           <button
-            className={`flex  w-[220px] h-[50px] bg-twitter hover:bg-twitter-dark transition duration-200 py-2 items-center  border-gray-300 justify-center gap-2 my-2 rounded-full`}
+            className={`flex w-[50px] xl:w-[220px] h-[50px] bg-twitter hover:bg-twitter-dark transition duration-200 py-2 items-center  border-gray-300 justify-center gap-2 my-2 rounded-full`}
           >
             <FeatherIcon />
             <span className="text-1xl xl:block md:hidden font-semibold text-white">

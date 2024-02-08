@@ -18,7 +18,7 @@ export default function ProfileButton() {
     <div className="relative">
       <button
         onClick={handleClick}
-        className={`flex px-3 w-[240px] h-[64px] hover:bg-gray-200 transition duration-200 py-2 items-center  border-gray-300  gap-2 my-2 rounded-full`}
+        className={`flex px-3 w-[64px] xl:w-[240px] h-[64px] hover:bg-gray-200 transition duration-200 py-2 items-center  border-gray-300  gap-2 my-2 rounded-full`}
       >
         <Avatar
           sx={{ width: 35, height: 35 }}
@@ -33,7 +33,7 @@ export default function ProfileButton() {
             @username
           </span>
         </div>
-        <HiDotsHorizontal className="ml-2" />
+        <HiDotsHorizontal className="ml-2 hidden xl:block" />
       </button>
       {showMenu && (
         <div

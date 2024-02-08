@@ -10,8 +10,11 @@ export function LoginSceleton() {
 
 export function PostFeedSceleton() {
   return (
-    <div className="flex w-full h-full flex-col bg-white rounded-2xl justify-start items-center">
-      <Image src="/loading-gif.gif" alt="loading" height={50} width={50} />
+    <div>
+      <div className="h-[53px] w-full z-0"></div>
+      <div className="flex w-full h-full flex-col bg-white rounded-2xl justify-start items-center">
+        <Image src="/loading-gif.gif" alt="loading" height={50} width={50} />
+      </div>
     </div>
   );
 }
