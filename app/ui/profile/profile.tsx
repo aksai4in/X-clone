@@ -1,3 +1,7 @@
 export default function Profile() {
-  return <div>this page is currently under development</div>;
+  return (
+    <div className="min-w-[600px]">
+      this page is currently under development
+    </div>
+  );
 }

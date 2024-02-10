@@ -77,8 +77,8 @@ export default function SideNav() {
     },
   ];
   return (
-    <div className="sticky top-0 border w-full h-screen max-w-[400px] flex justify-end ">
-      <div className=" flex flex-col">
+    <div className="sticky top-0 min-w-[72px] border w-full h-screen flex justify-end ">
+      <div className="sticky top-0 h-screen flex flex-col">
         <div className=" xl:w-[250px]">
           <Link
             href={encodeURI("/home")}

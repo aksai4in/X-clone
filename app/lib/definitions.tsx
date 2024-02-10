@@ -15,4 +15,5 @@ export type Post = {
   username: string;
   content: string;
   created_at: DateTime;
+  medialinks: string[];
 };

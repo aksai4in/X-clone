@@ -11,7 +11,14 @@ import { Session } from "inspector";
 import { useFormState } from "react-dom";
 import { MdVerified } from "react-icons/md";
 import SideNav from "./side-nav";
-
+import { FaEarthAmericas, FaRegFaceSmile } from "react-icons/fa6";
+import { HiOutlinePhotograph } from "react-icons/hi";
+import { PiUploadLight } from "react-icons/pi";
+import { HiOutlineFaceSmile, HiOutlineGif } from "react-icons/hi2";
+import { RiListRadio } from "react-icons/ri";
+import { TbCalendarTime } from "react-icons/tb";
+import { FaRegSmile } from "react-icons/fa";
+import { GrLocation } from "react-icons/gr";
 // const postPromise = fetch("/api/posts").then((res) => res.json());
 
 export default function Feed() {
@@ -27,9 +34,9 @@ export default function Feed() {
   }, []);
 
   return (
-    <div className=" border border-l-0  ">
+    <div className=" border border-l-0 max-w-[600px] ">
       <div
-        className="w-full max-w-[600px] z-0"
+        className="min-w-[600px]  max-w-[600px] z-0"
         style={{ scrollbarWidth: "none" }}
       >
         <div className="max-w-[600px] ">
@@ -102,11 +109,11 @@ function PostFeed({ posts }: { posts: any[] }) {
         const howRecent = Math.round(
           (nowInHK.getTime() - date.getTime()) / 3600000
         );
-        const options = {
+        const options: Intl.DateTimeFormatOptions = {
           month: "short",
           day: "numeric",
         };
-        const detailOptions = {
+        const detailOptions: Intl.DateTimeFormatOptions = {
           hour: "numeric",
           minute: "numeric",
           hour12: true,
@@ -122,7 +129,7 @@ function PostFeed({ posts }: { posts: any[] }) {
         const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
         return (
           <div
-            className="border py-3 px-4 hover:bg-gray-50 transition duration-150 flex"
+            className="border py-3 z-0 px-4 hover:bg-gray-50 transition duration-150 flex"
             key={post.post_id}
           >
             <div className="w-[44px] h-[44px] border">
@@ -153,6 +160,22 @@ function PostFeed({ posts }: { posts: any[] }) {
               </div>
               {/* content */}
               <div className="text-wrap break-all">{post.content}</div>
+              <div>
+                {post.medialinks && post.medialinks[0] && (
+                  <div>
+                    {post.medialinks.map((link: string) => (
+                      <Image
+                        key={link}
+                        className="rounded-2xl w-full"
+                        alt="image"
+                        width={4080}
+                        height={4080}
+                        src={link}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* footer */}
             </div>
@@ -165,16 +188,40 @@ function PostFeed({ posts }: { posts: any[] }) {
 
 function PostBox() {
   const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
-  const { data: data } = useSession();
+  const { data: session } = useSession();
   const initialState = { message: "" };
   const [state, formAction] = useFormState(createPost, initialState);
+  const uploadPhoto = (e: any) => {
+    const media = document.getElementById("media") as HTMLImageElement;
+    for (let i = 0; i < e.target.files.length; i++) {
+      const image = document.createElement("img");
+      image.src = URL.createObjectURL(e.target.files[i]);
+      image.className = "w-full rounded-2xl ";
+      media.appendChild(image);
+    }
+  };
+  const handleUploadImage = (e) => {
+    e.preventDefault();
+
+    if (!showWhoCanReplyButton) {
+      const textArea = document.getElementById(
+        "text-area"
+      ) as HTMLTextAreaElement;
+      textArea.focus();
+    } else {
+      const uploadImage = document.getElementById(
+        "uploadImage"
+      ) as HTMLInputElement;
+      uploadImage.click();
+    }
+  };
   return (
-    <div className={`w-full py-2 border flex bg-white  px-2 `}>
+    <div className={`w-full py-2 border flex bg-white  pr-2 pl-4 `}>
       <div className="w-[44px] h-[44px] border ">
         <Avatar
           sx={{ width: 42, height: 42 }}
           alt="Remy Sharp"
-          src={data?.user?.image as string}
+          src={session?.user?.image as string}
         />
       </div>
       <form action={formAction} className="w-full">
@@ -182,9 +229,10 @@ function PostBox() {
           <input
             type="hidden"
             name="email"
-            value={data?.user?.email as string}
+            value={session?.user?.email as string}
           ></input>
           <textarea
+            id="text-area"
             placeholder="What is happening?"
             name="content"
             onFocus={() => setShowWhoCanReplyButton(true)}
@@ -192,20 +240,62 @@ function PostBox() {
             wrap="soft"
             className="border w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
           ></textarea>
+          <div id="media"></div>
           <div
             className={`border ${
               showWhoCanReplyButton ? "block" : "hidden"
             } h-[37px]`}
           >
-            <button>Everyone can reply</button>
-          </div>
-          <div className="relative h-[48px] border ">
             <button
-              className={`absolute right-2 bottom-2 flex  w-[66px] h-[36px] bg-twitter hover:bg-twitter-dark transition duration-200 py-2 items-center  border-gray-300 justify-center gap-2 my-2 rounded-full`}
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+              className="flex items-center px-3 gap-1 transition duration-150 cursor-not-allowed border rounded-full  hover:bg-twitter-light text-twitter font-semibold text-sm p-1"
             >
-              <span className="text-md xl:block  font-semibold text-white">
-                Post
-              </span>
+              <FaEarthAmericas />
+              Everyone can reply
+            </button>
+          </div>
+          <div className="relative h-[48px] border flex gap-2 items-center  ">
+            <button
+              onClick={handleUploadImage}
+              className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-pointer hover:bg-twitter-light transition duration-150"
+            >
+              <HiOutlinePhotograph className=" text-twitter text-xl " />
+            </button>
+
+            <input
+              multiple={true}
+              type="file"
+              onChange={uploadPhoto}
+              className="hidden"
+              name="uploadImage"
+              id="uploadImage"
+            />
+            <div className="w-[34px] h-[34px] cursor-not-allowed flex items-center justify-center rounded-full  hover:bg-twitter-light transition duration-150">
+              <HiOutlineGif className=" text-twitter text-xl " />
+            </div>
+
+            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-not-allowed hover:bg-twitter-light transition duration-150">
+              <RiListRadio className="text-twitter text-xl" />
+            </div>
+            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-not-allowed hover:bg-twitter-light transition duration-150">
+              <FaRegSmile className="text-twitter text-xl" />
+            </div>
+            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-not-allowed hover:bg-twitter-light transition duration-150">
+              <TbCalendarTime className="text-twitter text-xl" />
+            </div>
+
+            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full ">
+              <GrLocation className="text-twitter text-xl opacity-60" />
+            </div>
+
+            <button
+              id="submit"
+              type="submit"
+              className={`absolute right-0 bottom-1 flex  w-[66px] h-[36px] bg-twitter hover:bg-twitter-dark transition duration-200 items-center  border-gray-300 justify-center gap-2 rounded-full`}
+            >
+              <span className="text-sm font-semibold text-white">Post</span>
             </button>
           </div>
         </div>

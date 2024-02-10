@@ -4,5 +4,5 @@ import Notifications from "../../ui/notifications/notifications";
 import Profile from "../../ui/profile/profile";
 
 export default function Page() {
-  return <Profile />;
+  return <Messages />;
 }
