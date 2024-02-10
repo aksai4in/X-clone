@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FaApple } from "react-icons/fa";
-import { AppleButton, GoogleButton } from "./authButtons";
+import { AppleButton, GoogleButton } from "./buttons";
 import Modal from "./modal";
 type SearchParamProps = {
   searchParams: Record<string, string> | null | undefined;

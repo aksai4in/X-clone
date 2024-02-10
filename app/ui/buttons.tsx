@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AiOutlineClose } from "react-icons/ai";
 import { FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { IoMdArrowBack } from "react-icons/io";
 
 export function GoogleButton({ name }: { name: String }) {
   const router = useRouter();
@@ -47,6 +48,20 @@ export function CloseButton() {
       className="flex justify-center items-center w-10 h-10 absolute left-2 rounded-full hover:bg-gray-300 transition duration-200"
     >
       <AiOutlineClose />
+    </button>
+  );
+}
+export function BackButton() {
+  const router = useRouter();
+  const handleClick = () => {
+    router.back();
+  };
+  return (
+    <button
+      onClick={handleClick}
+      className="flex justify-center text-xl items-center w-10 h-10 absolute left-0 rounded-full hover:bg-gray-300 transition duration-200"
+    >
+      <IoMdArrowBack />
     </button>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import { FaXTwitter } from "react-icons/fa6";
-import { AppleButton, CloseButton, GoogleButton } from "./authButtons";
+import { AppleButton, CloseButton, GoogleButton } from "./buttons";
 import { AiOutlineClose } from "react-icons/ai";
 import Link from "next/link";
 import { ChangeEventHandler, FormEvent, Suspense, useState } from "react";

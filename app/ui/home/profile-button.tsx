@@ -1,13 +1,16 @@
 "use client";
+import { getUserByEmail } from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { set } from "zod";
 
 export default function ProfileButton() {
-  const { data: data } = useSession();
+  const { data: session } = useSession();
   const [showMenu, setShowMenu] = useState(false);
-  console.log(data?.user);
+  const [username, setUsername] = useState("");
+
   const logout = () => {
     signOut();
   };
@@ -27,6 +30,11 @@ export default function ProfileButton() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [showMenu]);
+  useEffect(() => {
+    getUserByEmail(session?.user?.email as string).then((res) => {
+      setUsername(res);
+    });
+  }, []);
 
   return (
     <div className="relative">
@@ -37,14 +45,14 @@ export default function ProfileButton() {
         <Avatar
           sx={{ width: 42, height: 42 }}
           alt="avatar"
-          src={data?.user?.image as string}
+          src={session?.user?.image as string}
         />
         <div className="flex flex-col justify-start">
           <span className="text-1xl text-sm xl:block md:hidden font-semibold ">
-            {data?.user?.name}
+            {session?.user?.name}
           </span>
           <span className="text-sm text-left text-gray-500 xl:block md:hidden">
-            @username
+            @{username}
           </span>
         </div>
         <HiDotsHorizontal className="ml-2 hidden xl:block" />
@@ -60,7 +68,7 @@ export default function ProfileButton() {
             className="py-2 text-left font-semibold w-full hover:bg-slate-100 px-3 transition duration-200"
             onClick={logout}
           >
-            Log out @username
+            Log out @{username}
           </button>
         </div>
       )}

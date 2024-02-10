@@ -17,3 +17,13 @@ export type Post = {
   created_at: DateTime;
   medialinks: string[];
 };
+
+export type PostUser = {
+  post_id: number;
+  username: string;
+  image: string;
+  name: string;
+  content: string;
+  created_at: DateTime;
+  medialinks: string[];
+};

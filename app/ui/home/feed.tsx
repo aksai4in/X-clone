@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { PostFeedSceleton } from "../skeletons";
 import { Post } from "@/app/lib/definitions";
 import { use } from "react";
-import { createPost, fetchPosts } from "@/app/lib/actions";
+import { createPost, fetchPosts, getUserByEmail } from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { useSession } from "next-auth/react";
 import { Session } from "inspector";
@@ -12,13 +12,17 @@ import { useFormState } from "react-dom";
 import { MdVerified } from "react-icons/md";
 import SideNav from "./side-nav";
 import { FaEarthAmericas, FaRegFaceSmile } from "react-icons/fa6";
-import { HiOutlinePhotograph } from "react-icons/hi";
+import { HiOutlineBookmark, HiOutlinePhotograph } from "react-icons/hi";
 import { PiUploadLight } from "react-icons/pi";
 import { HiOutlineFaceSmile, HiOutlineGif } from "react-icons/hi2";
-import { RiListRadio } from "react-icons/ri";
+import { RiEyeCloseLine, RiListRadio } from "react-icons/ri";
 import { TbCalendarTime } from "react-icons/tb";
-import { FaRegSmile } from "react-icons/fa";
+import { FaComment, FaRegSmile, FaRetweet } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
+import { useRouter } from "next/navigation";
+import { GoHeart } from "react-icons/go";
+import { IoStatsChart } from "react-icons/io5";
+import { LuShare } from "react-icons/lu";
 // const postPromise = fetch("/api/posts").then((res) => res.json());
 
 export default function Feed() {
@@ -52,7 +56,6 @@ export default function Feed() {
 
 function FeedSelectionButtons() {
   const [contentType, setContentType] = useState(1);
-
   return (
     <div className="sticky  top-0 z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur">
       <button
@@ -97,8 +100,9 @@ function FeedSelectionButtons() {
   );
 }
 
-function PostFeed({ posts }: { posts: any[] }) {
+export function PostFeed({ posts }: { posts: any[] }) {
   console.log(posts);
+  const router = useRouter();
 
   return (
     <div>
@@ -129,6 +133,10 @@ function PostFeed({ posts }: { posts: any[] }) {
         const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
         return (
           <div
+            onClick={() => {
+              console.log(`/${post.username}/${post.post_id}`);
+              router.push(`/${post.username}/${post.post_id}`);
+            }}
             className="border py-3 z-0 px-4 hover:bg-gray-50 transition duration-150 flex"
             key={post.post_id}
           >
@@ -178,6 +186,29 @@ function PostFeed({ posts }: { posts: any[] }) {
               </div>
 
               {/* footer */}
+              <div className="border h-[32px] grid grid-cols-5 justify-items-center items-center">
+                {/* replies */}
+                <div>
+                  <FaComment />
+                </div>
+                {/* reposts */}
+                <div>
+                  <FaRetweet />
+                </div>
+                {/* likes */}
+                <div>
+                  <GoHeart />
+                </div>
+                {/* views */}
+                <div>
+                  <IoStatsChart />
+                </div>
+                {/* bookmark & share */}
+                <div className="flex">
+                  <HiOutlineBookmark />
+                  <LuShare />
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -189,8 +220,15 @@ function PostFeed({ posts }: { posts: any[] }) {
 function PostBox() {
   const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
   const { data: session } = useSession();
-  const initialState = { message: "" };
+  const initialState = { error: null, message: "" };
+  const [postButtonDisabled, setPostButtonDisabled] = useState(true);
+  const [username, setUsername] = useState("");
   const [state, formAction] = useFormState(createPost, initialState);
+  useEffect(() => {
+    getUserByEmail(session?.user?.email as string).then((user) => {
+      setUsername(user);
+    });
+  }, []);
   const uploadPhoto = (e: any) => {
     const media = document.getElementById("media") as HTMLImageElement;
     for (let i = 0; i < e.target.files.length; i++) {
@@ -200,9 +238,8 @@ function PostBox() {
       media.appendChild(image);
     }
   };
-  const handleUploadImage = (e) => {
+  const handleUploadImage = (e: any) => {
     e.preventDefault();
-
     if (!showWhoCanReplyButton) {
       const textArea = document.getElementById(
         "text-area"
@@ -215,6 +252,15 @@ function PostBox() {
       uploadImage.click();
     }
   };
+  function auto_grow(e: any) {
+    if (e.target.value != "" && username != "") {
+      setPostButtonDisabled(false);
+    } else {
+      setPostButtonDisabled(true);
+    }
+    e.target.style.height = "30px";
+    e.target.style.height = e.target.scrollHeight + "px";
+  }
   return (
     <div className={`w-full py-2 border flex bg-white  pr-2 pl-4 `}>
       <div className="w-[44px] h-[44px] border ">
@@ -227,9 +273,10 @@ function PostBox() {
       <form action={formAction} className="w-full">
         <div className="px-2 border w-full">
           <input
+            id="usename"
             type="hidden"
-            name="email"
-            value={session?.user?.email as string}
+            name="username"
+            value={username}
           ></input>
           <textarea
             id="text-area"
@@ -291,7 +338,7 @@ function PostBox() {
             </div>
 
             <button
-              id="submit"
+              disabled={postButtonDisabled}
               type="submit"
               className={`absolute right-0 bottom-1 flex  w-[66px] h-[36px] bg-twitter hover:bg-twitter-dark transition duration-200 items-center  border-gray-300 justify-center gap-2 rounded-full`}
             >
@@ -302,8 +349,4 @@ function PostBox() {
       </form>
     </div>
   );
-}
-function auto_grow(e: any) {
-  e.target.style.height = "30px";
-  e.target.style.height = e.target.scrollHeight + "px";
 }
