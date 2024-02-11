@@ -7,7 +7,8 @@ export type User = {
   image: string;
   password: string;
   date_of_birth: string;
-  date_of_joinign: string;
+  date_of_joining: string;
+  profile_photot: string;
 };
 
 export type Post = {

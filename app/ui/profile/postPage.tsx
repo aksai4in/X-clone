@@ -9,7 +9,7 @@ import {
 } from "@/app/lib/actions";
 import { Post } from "@/app/lib/definitions";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MdVerified } from "react-icons/md";
 import { set } from "zod";
 import Avatar from "@mui/material/Avatar";
@@ -23,124 +23,111 @@ import { HiOutlineGif } from "react-icons/hi2";
 import { RiListRadio } from "react-icons/ri";
 import { FaRegSmile } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
+import { context } from "@/app/(main)/layout";
 
 export default function PostPage({
   params,
 }: {
-  params: { username: string; post_id: string };
+  params: { username: string; post_id: number };
 }) {
-  const [posts, setPosts] = useState([] as any[]);
-  const [username, setUsername] = useState("");
+  const [post, setPost] = useState({} as any);
+  const [username] = useContext(context);
   const { data: session } = useSession();
   const [replies, setReplies] = useState([] as Post[]);
   useEffect(() => {
-    getUserByEmail(session?.user?.email as string).then((res) => {
-      setUsername(res);
+    if (!username) return;
+    getPost(username, post_id).then((res) => {
+      setPost(res);
+      console.log(res);
     });
-    getPost(post_id).then((res) => {
-      setPosts(res);
-    });
-    getReplies(post_id).then((res) => {
+    getReplies(username, post_id).then((res) => {
       setReplies(res);
+      console.log(res);
     });
-  }, []);
+  }, [username]);
   const post_id = params.post_id;
 
   function PostDetails() {
+    const date = new Date(post.created_at);
+    const now = new Date();
+    const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+    const howRecent = Math.round(
+      (nowInHK.getTime() - date.getTime()) / 3600000
+    );
+    const detailOptions: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    // const detailedTime = new Intl.DateTimeFormat("en-US", detailOptions).format(
+    //   date
+    // );
+    // const parts = detailedTime.split(",");
+    // const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
     return (
-      <div>
-        {posts.map((post) => {
-          const date = new Date(post.created_at);
-          const now = new Date();
-          const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-          const howRecent = Math.round(
-            (nowInHK.getTime() - date.getTime()) / 3600000
-          );
-          const options: Intl.DateTimeFormatOptions = {
-            month: "short",
-            day: "numeric",
-          };
-          const detailOptions: Intl.DateTimeFormatOptions = {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          };
-          const detailedTime = new Intl.DateTimeFormat(
-            "en-US",
-            detailOptions
-          ).format(date);
-          const parts = detailedTime.split(",");
-          const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
-          return (
-            <div className="border py-3 z-0 px-4  flex" key={post.post_id}>
-              <div className="w-full z-0 border ">
-                {/* header1 */}
-                <div className="relative flex h-[53px] items-center ">
-                  <BackButton />
-                  <div className="absolute left-14 font-bold text-xl">Post</div>
-                </div>
-                {/* header */}
-                <div className="w-full flex items-center ">
-                  <div className="w-[44px] h-[44px] border">
-                    <Avatar
-                      sx={{ width: 42, height: 42, zIndex: 0 }}
-                      alt="Remy Sharp"
-                      src={post.image as string}
-                    />
-                  </div>
-                  <div className="w-full relative flex flex-col px-2 border text-sm gap-1">
-                    <span className="font-semibold flex gap-1">
-                      {post.name}
-                      <MdVerified className="text-xl text-twitter" />{" "}
-                    </span>
-                    <span className="border text-gray-600 ">
-                      {" "}
-                      @{post.username}
-                    </span>
-                  </div>
-                  {username != params.username && (
-                    <button className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white">
-                      Subscribe
-                    </button>
-                  )}
-                  <button className="flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
-                    <HiDotsHorizontal />
-                  </button>
-                </div>
-                {/* content */}
-                <div className="text-wrap break-all py-2">{post.content}</div>
-                <div>
-                  {post.medialinks && post.medialinks[0] && (
-                    <div>
-                      {post.medialinks.map((link: string) => (
-                        <Image
-                          key={link}
-                          className="rounded-2xl w-full"
-                          alt="image"
-                          width={4080}
-                          height={4080}
-                          src={link}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* time */}
-                <div className="relative w-40 group border text-gray-600  text-sm">
-                  <div className=" hover:underline">{reorderedDate}</div>
-
-                  <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4  text-nowrap hidden group-hover:block">
-                    {reorderedDate}
-                  </div>
-                </div>
-                {/* footer */}
-              </div>
+      <div className="border py-3 z-0 px-4  flex" key={post.post_id}>
+        <div className="w-full z-0 border ">
+          {/* header1 */}
+          <div className="relative flex h-[53px] items-center ">
+            <BackButton />
+            <div className="absolute left-14 font-bold text-xl">Post</div>
+          </div>
+          {/* header */}
+          <div className="w-full flex items-center ">
+            <div className="w-[44px] h-[44px] border">
+              <Avatar
+                sx={{ width: 42, height: 42, zIndex: 0 }}
+                alt="Remy Sharp"
+                src={post.image as string}
+              />
             </div>
-          );
-        })}
+            <div className="w-full relative flex flex-col px-2 border text-sm gap-1">
+              <span className="font-semibold flex gap-1">
+                {post.name}
+                <MdVerified className="text-xl text-twitter" />{" "}
+              </span>
+              <span className="border text-gray-600 "> @{post.username}</span>
+            </div>
+            {username != post.username && (
+              <button className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white">
+                Follow
+              </button>
+            )}
+            <button className="flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
+              <HiDotsHorizontal />
+            </button>
+          </div>
+          {/* content */}
+          <div className="text-wrap break-all py-2">{post.content}</div>
+          <div>
+            {post.medialinks && post.medialinks[0] && (
+              <div>
+                {post.medialinks.map((link: string) => (
+                  <Image
+                    key={link}
+                    className="rounded-2xl w-full"
+                    alt="image"
+                    width={4080}
+                    height={4080}
+                    src={link}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          {/* time */}
+          <div className="relative w-40 group border text-gray-600  text-sm">
+            <div className=" hover:underline">{"reorderedDate"}</div>
+
+            <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4  text-nowrap hidden group-hover:block">
+              {"reorderedDate"}
+            </div>
+          </div>
+          {/* footer */}
+        </div>
       </div>
     );
   }
@@ -152,7 +139,7 @@ export default function PostPage({
     </div>
   );
 }
-function ReplyBox({ post_id }: { post_id: string }) {
+function ReplyBox({ post_id }: { post_id: number }) {
   const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
   const { data: session } = useSession();
   const initialState = { error: null, message: "" };

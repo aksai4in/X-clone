@@ -1,10 +1,20 @@
 "use client";
 import Image from "next/image";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useContext, useEffect, useState } from "react";
 import { PostFeedSceleton } from "../skeletons";
 import { Post } from "@/app/lib/definitions";
 import { use } from "react";
-import { createPost, fetchPosts, getUserByEmail } from "@/app/lib/actions";
+import {
+  bookmark,
+  createPost,
+  dislike,
+  existsLike,
+  getPosts,
+  getLikes,
+  getUserByEmail,
+  like,
+  unbookmark,
+} from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { useSession } from "next-auth/react";
 import { Session } from "inspector";
@@ -12,7 +22,11 @@ import { useFormState } from "react-dom";
 import { MdVerified } from "react-icons/md";
 import SideNav from "./side-nav";
 import { FaEarthAmericas, FaRegFaceSmile } from "react-icons/fa6";
-import { HiOutlineBookmark, HiOutlinePhotograph } from "react-icons/hi";
+import {
+  HiBookmark,
+  HiOutlineBookmark,
+  HiOutlinePhotograph,
+} from "react-icons/hi";
 import { PiUploadLight } from "react-icons/pi";
 import { HiOutlineFaceSmile, HiOutlineGif } from "react-icons/hi2";
 import { RiEyeCloseLine, RiListRadio } from "react-icons/ri";
@@ -20,22 +34,32 @@ import { TbCalendarTime } from "react-icons/tb";
 import { FaComment, FaRegSmile, FaRetweet } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
 import { useRouter } from "next/navigation";
-import { GoHeart } from "react-icons/go";
+import { GoHeart, GoHeartFill } from "react-icons/go";
 import { IoStatsChart } from "react-icons/io5";
 import { LuShare } from "react-icons/lu";
+import { context } from "@/app/(main)/layout";
+import ReactDOM from "react-dom";
 // const postPromise = fetch("/api/posts").then((res) => res.json());
 
 export default function Feed() {
-  // { posts }: { posts: Post[] }
   const [data, setData] = useState([] as Post[]);
   const [isLoading, setIsLoading] = useState(true);
+  const [username, bookmarked, setBookmarked] = useContext(context);
+  const { data: session } = useSession();
+  useEffect(() => {
+    if (username != "") {
+      console.log("fetching posts");
+      getPosts(username).then((res) => {
+        console.log("done");
+        setData(res);
+        setIsLoading(false);
+      });
+    }
+  }, [username]);
 
   useEffect(() => {
-    fetchPosts().then((posts) => {
-      setData(posts);
-      setIsLoading(false);
-    });
-  }, []);
+    console.log("data changed");
+  }, [data]);
 
   return (
     <div className=" border border-l-0 max-w-[600px] ">
@@ -45,7 +69,7 @@ export default function Feed() {
       >
         <div className="max-w-[600px] ">
           <FeedSelectionButtons />
-          <PostBox />
+          <PostBox posts={data} setPosts={setData} />
           {isLoading && <PostFeedSceleton />}
           {!isLoading && <PostFeed posts={data} />}
         </div>
@@ -101,134 +125,222 @@ function FeedSelectionButtons() {
 }
 
 export function PostFeed({ posts }: { posts: any[] }) {
-  console.log(posts);
-  const router = useRouter();
-
   return (
-    <div>
-      {posts.map((post) => {
-        const date = new Date(post.created_at);
-        const now = new Date();
-        const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-        const howRecent = Math.round(
-          (nowInHK.getTime() - date.getTime()) / 3600000
-        );
-        const options: Intl.DateTimeFormatOptions = {
-          month: "short",
-          day: "numeric",
-        };
-        const detailOptions: Intl.DateTimeFormatOptions = {
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        };
-        const detailedTime = new Intl.DateTimeFormat(
-          "en-US",
-          detailOptions
-        ).format(date);
-        const parts = detailedTime.split(",");
-        const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
-        return (
-          <div
-            onClick={() => {
-              console.log(`/${post.username}/${post.post_id}`);
-              router.push(`/${post.username}/${post.post_id}`);
-            }}
-            className="border py-3 z-0 px-4 hover:bg-gray-50 transition duration-150 flex"
-            key={post.post_id}
-          >
-            <div className="w-[44px] h-[44px] border">
-              <Avatar
-                sx={{ width: 42, height: 42, zIndex: 0 }}
-                alt="Remy Sharp"
-                src={post.image as string}
-              />
-            </div>
-            <div className="w-full z-0 border px-3">
-              {/* header */}
-              <div className="flex text-sm gap-1">
-                <span className="font-semibold">{post.name} </span>
-                <MdVerified className="text-xl text-twitter" />
-
-                <span className="text-gray-400">
-                  {" "}
-                  @{post.username} ·{" "}
-                  <span className="relative group">
-                    {howRecent < 24
-                      ? howRecent + "h"
-                      : new Intl.DateTimeFormat("en-US", options).format(date)}
-                    <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4 -left-14 text-nowrap hidden group-hover:block">
-                      {reorderedDate}
-                    </div>
-                  </span>
-                </span>
-              </div>
-              {/* content */}
-              <div className="text-wrap break-all">{post.content}</div>
-              <div>
-                {post.medialinks && post.medialinks[0] && (
-                  <div>
-                    {post.medialinks.map((link: string) => (
-                      <Image
-                        key={link}
-                        className="rounded-2xl w-full"
-                        alt="image"
-                        width={4080}
-                        height={4080}
-                        src={link}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* footer */}
-              <div className="border h-[32px] grid grid-cols-5 justify-items-center items-center">
-                {/* replies */}
-                <div>
-                  <FaComment />
-                </div>
-                {/* reposts */}
-                <div>
-                  <FaRetweet />
-                </div>
-                {/* likes */}
-                <div>
-                  <GoHeart />
-                </div>
-                {/* views */}
-                <div>
-                  <IoStatsChart />
-                </div>
-                {/* bookmark & share */}
-                <div className="flex">
-                  <HiOutlineBookmark />
-                  <LuShare />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div id="post-feed">
+      {posts.map((post) => (
+        <PostComponent post={post} />
+      ))}
     </div>
   );
 }
 
-function PostBox() {
-  const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
+function PostComponent({ post }: { post: any }) {
+  const [username, bookmarked, setBookmarked] = useContext(context);
+  const router = useRouter();
+  const [like_count, setLikeCount] = useState(post.like_count as number);
+  const [liked, setLiked] = useState(post.liked == 1);
+  const [isBookmarked, setIsBookmarked] = useState(
+    bookmarked.has(post.post_id)
+  );
+
+  // date formatting
+  const date = new Date(post.created_at);
+  const now = new Date();
+  const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+  const howRecent = Math.round((nowInHK.getTime() - date.getTime()) / 3600000);
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+  };
+  const detailOptions: Intl.DateTimeFormatOptions = {
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  };
+  const detailedTime = new Intl.DateTimeFormat("en-US", detailOptions).format(
+    date
+  );
+  const parts = detailedTime.split(",");
+  const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
+
+  return (
+    <div
+      onClick={() => {
+        console.log(`/${post.username}/${post.post_id}`);
+        router.push(`/${post.username}/${post.post_id}`);
+      }}
+      className="border py-3 z-0 px-4 hover:bg-gray-50 transition duration-150 flex"
+      key={post.post_id}
+    >
+      <div className="w-[44px] h-[44px] border">
+        <Avatar
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/${post.username}`);
+          }}
+          className="cursor-pointer"
+          sx={{ width: 42, height: 42, zIndex: 0 }}
+          alt="Remy Sharp"
+          src={post.image as string}
+        />
+      </div>
+      <div className="w-full z-0 border px-3">
+        {/* header */}
+        <div className="flex text-sm gap-1">
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/${post.username}`);
+            }}
+            className="font-semibold hover:underline cursor-pointer"
+          >
+            {post.name}{" "}
+          </span>
+          <MdVerified className="text-xl text-twitter" />
+
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/${post.username}`);
+            }}
+            className="text-gray-400 cursor-pointer"
+          >
+            {" "}
+            @{post.username} ·{" "}
+          </span>
+          <span className="relative group">
+            {howRecent < 24
+              ? howRecent + "h"
+              : new Intl.DateTimeFormat("en-US", options).format(date)}
+            <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4 -left-14 text-nowrap hidden group-hover:block">
+              {reorderedDate}
+            </div>
+          </span>
+        </div>
+        {/* content */}
+        <div className="text-wrap break-all">{post.content}</div>
+        <div>
+          {post.medialinks && post.medialinks[0] && (
+            <div>
+              {post.medialinks.map((link: string) => (
+                <Image
+                  key={link}
+                  className="rounded-2xl w-full"
+                  alt="image"
+                  width={4080}
+                  height={4080}
+                  src={link}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* footer */}
+        <div className="border h-[32px] grid grid-cols-5 justify-items-center items-center">
+          {/* replies */}
+          <div>
+            <FaComment />
+          </div>
+          {/* reposts */}
+          <div>
+            <FaRetweet />
+          </div>
+          {/* likes */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (liked) {
+                dislike(username, post.post_id).then((res) => {
+                  if (res) {
+                    setLikeCount(like_count - 1);
+                    setLiked(false);
+                  }
+                });
+              } else {
+                like(username, post.post_id).then((res) => {
+                  if (res) {
+                    setLikeCount(like_count + 1);
+                    setLiked(true);
+                  }
+                });
+              }
+            }}
+            className="flex items-center gap-1"
+          >
+            <GoHeart className={liked ? "hidden" : "block"} />
+            <GoHeartFill className={liked ? "block" : "hidden"} />
+            <div id="likes" className="text-sm">
+              {like_count}
+            </div>
+          </button>
+          {/* views */}
+          <div>
+            <IoStatsChart />
+          </div>
+          {/* bookmark & share */}
+          <div className="flex">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (bookmarked.has(post.post_id)) {
+                  unbookmark(username, post.post_id).then((res) => {
+                    if (res) {
+                      bookmarked.delete(post.post_id);
+                      setBookmarked(bookmarked);
+                      setIsBookmarked(false);
+                    }
+                  });
+                } else {
+                  bookmark(username, post.post_id).then((res) => {
+                    if (res) {
+                      bookmarked.add(post.post_id);
+                      setBookmarked(bookmarked);
+                      setIsBookmarked(true);
+                    }
+                  });
+                }
+              }}
+            >
+              <HiOutlineBookmark
+                className={isBookmarked ? "hidden" : "block"}
+              />
+              <HiBookmark className={isBookmarked ? "block" : "hidden"} />
+            </button>
+            <LuShare />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
   const { data: session } = useSession();
-  const initialState = { error: null, message: "" };
+  const [username] = useContext(context);
+  const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
   const [postButtonDisabled, setPostButtonDisabled] = useState(true);
-  const [username, setUsername] = useState("");
+
+  const initialState = { error: null, message: "" };
+
   const [state, formAction] = useFormState(createPost, initialState);
+
   useEffect(() => {
-    getUserByEmail(session?.user?.email as string).then((user) => {
-      setUsername(user);
-    });
-  }, []);
+    if (state.username) {
+      const textArea = document.getElementById(
+        "text-area"
+      ) as HTMLTextAreaElement;
+      const content = textArea?.value;
+      textArea.value = "";
+      console.log(state);
+      const stateArr = new Array(state);
+      setPosts(stateArr.concat(posts));
+    }
+  }, [state]);
+
   const uploadPhoto = (e: any) => {
     const media = document.getElementById("media") as HTMLImageElement;
     for (let i = 0; i < e.target.files.length; i++) {

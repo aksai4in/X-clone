@@ -53,7 +53,8 @@ export function CloseButton() {
 }
 export function BackButton() {
   const router = useRouter();
-  const handleClick = () => {
+  const handleClick = (e: any) => {
+    e.stopPropagation();
     router.back();
   };
   return (

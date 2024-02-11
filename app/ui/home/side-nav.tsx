@@ -33,9 +33,12 @@ import {
   HiSearch,
   HiUser,
 } from "react-icons/hi";
+import { useContext } from "react";
+import { context } from "@/app/(main)/layout";
 const ACTIVE_ROUTE = "font-bold";
 const INACTIVE_ROUTE = "";
 export default function SideNav() {
+  const [username] = useContext(context);
   const pathname = usePathname();
   const sideNavLinks = [
     { name: "Home", url: "/home", icon1: HiOutlineHome, icon2: HiHome },
@@ -65,7 +68,7 @@ export default function SideNav() {
     },
     {
       name: "Profile",
-      url: "/profile",
+      url: `/${username}`,
       icon1: HiOutlineUser,
       icon2: HiUser,
     },
@@ -94,7 +97,6 @@ export default function SideNav() {
               const IconBold = link.icon2;
 
               const path = link.url;
-              console.log(pathname, path);
               return (
                 <Link
                   key={link.name}

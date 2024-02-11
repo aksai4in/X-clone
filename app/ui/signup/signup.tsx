@@ -1,16 +1,16 @@
 "use client";
 import { FaXTwitter } from "react-icons/fa6";
-import { AppleButton, CloseButton, GoogleButton } from "./buttons";
+import { AppleButton, CloseButton, GoogleButton } from "../buttons";
 import { AiOutlineClose } from "react-icons/ai";
 import Link from "next/link";
 import { ChangeEventHandler, FormEvent, Suspense, useState } from "react";
-import { existsUserWithEmail } from "../lib/actions";
+import { existsUserWithEmail } from "../../lib/actions";
 import { setLazyProp } from "next/dist/server/api-utils";
-import { LoginSceleton } from "./skeletons";
+import { LoginSceleton } from "../skeletons";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { signIn } from "next-auth/react";
 
-export default function Login() {
+export default function SignUp() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");

@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import Login from "../ui/login/login";
+import SignUp from "../ui/signup/signup";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { Suspense } from "react";
@@ -19,7 +19,7 @@ export default async function Page() {
         // ref={wrapper}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 sm:w-10/12 md:w-8/12 lg:w-2/5 p-6"
       >
-        <Login />
+        <SignUp />
       </div>
     </div>
   );
