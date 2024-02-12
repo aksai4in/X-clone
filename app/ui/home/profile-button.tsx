@@ -1,15 +1,16 @@
 "use client";
+import { context } from "@/app/(main)/layout";
 import { getUserByEmail } from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { set } from "zod";
 
 export default function ProfileButton() {
   const { data: session } = useSession();
   const [showMenu, setShowMenu] = useState(false);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useContext(context);
 
   const logout = () => {
     signOut();
@@ -30,11 +31,6 @@ export default function ProfileButton() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [showMenu]);
-  useEffect(() => {
-    getUserByEmail(session?.user?.email as string).then((res) => {
-      setUsername(res);
-    });
-  }, []);
 
   return (
     <div className="relative">
@@ -59,7 +55,7 @@ export default function ProfileButton() {
       </button>
       {showMenu && (
         <div
-          className={`my-element z-10 bg-white border absolute shadow-lg py-3 rounded-xl w-[300px] -top-32 -left-[30px]`}
+          className={`my-element z-11 bg-white border absolute shadow-lg py-3 rounded-xl w-[300px] -top-32 -left-[110px] xl:-left-[30px]`}
         >
           <button className="py-2 cursor-not-allowed text-left font-semibold w-full hover:bg-gray-100 px-3 transition duration-200">
             Add existing account

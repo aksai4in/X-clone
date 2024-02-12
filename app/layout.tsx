@@ -4,6 +4,8 @@ import "./globals.css";
 import SessionProvider from "./components/session-provider";
 import { getServerSession } from "next-auth";
 import AuthButton from "./components/nav-menu";
+import { getUserByEmail } from "./lib/actions";
+import { redirect } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -16,6 +18,7 @@ export default async function RootLayout(props: {
   children: React.ReactNode;
 }) {
   const session = await getServerSession();
+
   return (
     <html lang="en">
       <body className={inter.className}>

@@ -1,6 +1,11 @@
 "use client";
 
-import { getUser, getUserPosts } from "@/app/lib/actions";
+import {
+  createFollow,
+  deleteFollow,
+  getUser,
+  getUserPosts,
+} from "@/app/lib/actions";
 import { useContext, useEffect, useState } from "react";
 import { BackButton } from "../buttons";
 import { useSession } from "next-auth/react";
@@ -11,6 +16,7 @@ import Avatar from "@mui/material/Avatar";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { MdVerified } from "react-icons/md";
 import { HiOutlineCalendarDays } from "react-icons/hi2";
+import { PostFeedSceleton } from "../skeletons";
 
 export default function ProfilePage({
   params,
@@ -18,77 +24,163 @@ export default function ProfilePage({
   params: { username: string };
 }) {
   const [posts, setPosts] = useState([] as any[]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [follows, setFollows] = useState(false);
+  const [following, setFollowing] = useState(0 as number);
+  const [followers, setFollowers] = useState(0 as number);
   const [username] = useContext(context);
   const [user, setUser] = useState({} as any);
   const [joinDate, setJoinDate] = useState("");
   const { data: session } = useSession();
   useEffect(() => {
-    if (!username) return;
-    getUser(username).then((res) => {
-      setUser(res);
-      const date_of_joining = new Date(res.date_of_joining);
-      const month = new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-        date_of_joining
-      );
-      const year = date_of_joining.getFullYear();
-      setJoinDate(`Joined ${month} ${year}`);
-    });
-    getUserPosts(username).then((res) => {
+    if (username) {
+      getUser(username, params.username).then((res) => {
+        setUser(res);
+        console.log(res);
+        setFollows(res.follows);
+        setFollowing(parseInt(res.following));
+        setFollowers(parseInt(res.followers));
+
+        if (res.date_of_joining) {
+          const date_of_joining = new Date(res.date_of_joining);
+          const month = new Intl.DateTimeFormat("en-US", {
+            month: "long",
+          }).format(date_of_joining);
+          const year = date_of_joining.getFullYear();
+          setJoinDate(`Joined ${month} ${year}`);
+        }
+      });
+    }
+    getUserPosts(params.username).then((res) => {
       setPosts(res);
+      setLoadingPosts(false);
     });
   }, [username]);
-  console.log(user);
+  useEffect(() => {
+    console.log("followers changed to " + followers);
+    console.log(typeof followers);
+  }, [followers]);
+
+  const follow = () => {
+    createFollow(username, params.username).then((res) => {
+      if (res) {
+        setFollows(true);
+        setFollowers((f) => f + 1);
+      } else {
+        console.log("error");
+      }
+    });
+  };
+  const unfollow = () => {
+    deleteFollow(username, params.username).then((res) => {
+      if (res) {
+        setFollows(false);
+        setFollowers((f) => f - 1);
+      } else {
+        console.log("error");
+      }
+    });
+  };
 
   function ProfileDetails() {
     return (
-      <div className="relative">
-        <Image
-          src={user.profile_photo}
+      <div className="relative border-b  ">
+        <img
+          src={
+            user.profile_photo
+              ? user.profile_photo
+              : "/plain-gray-background.jpg"
+          }
           alt={"image"}
-          width={400}
-          height={400}
           className="w-full h-[200px] object-cover"
-        ></Image>
+        ></img>
         <Avatar
           sx={{ width: 134, height: 134 }}
           alt="avatar"
-          className="absolute left-4 top-[133px] border-4 border-white bg-white"
-          src={session?.user?.image as string}
+          className="absolute left-4 top-[133px] border-4 border-white"
+          src={user.image as string}
         />
         <div className="border w-full h-16 pr-4 gap-2 flex justify-end items-center">
           <button className="flex border justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
             <HiDotsHorizontal />
           </button>
-          {username == params.username && (
-            <button className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white">
-              Follow
-            </button>
+          {username != params.username && (
+            <>
+              {user.username && (
+                <>
+                  {!follows && (
+                    <button
+                      onClick={follow}
+                      className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white"
+                    >
+                      Follow
+                    </button>
+                  )}
+                  {follows && (
+                    <button
+                      onClick={unfollow}
+                      className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white"
+                    >
+                      Unfollow
+                    </button>
+                  )}
+                </>
+              )}
+            </>
           )}
         </div>
         <div className="p-4">
           <div className=" flex my-2">
             <div className="flex flex-col">
               <div className="flex">
-                <span className="font-bold">{user.name}</span>
-                <MdVerified className="text-xl text-twitter" />
+                {user ? (
+                  <>
+                    <span className="font-bold">{user.name}</span>
+                    {user.verified ? (
+                      <MdVerified className="text-xl text-twitter" />
+                    ) : (
+                      <div></div>
+                    )}
+                  </>
+                ) : (
+                  <div></div>
+                )}
               </div>
-
-              <span className="text-sm text-gray-500">@{user.username}</span>
+              {user.username ? (
+                <>
+                  {" "}
+                  <span className="text-sm text-gray-500">
+                    @{user.username}
+                  </span>{" "}
+                </>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
           {/* bio */}
           <div>{user.bio}</div>
           {/* join date */}
-          <div className="flex text-sm gap-1 text-gray-500 ">
-            <HiOutlineCalendarDays />
-            {joinDate}
-          </div>
+          {joinDate ? (
+            <>
+              <div className="flex text-sm gap-1 text-gray-500 ">
+                <HiOutlineCalendarDays />
+                {joinDate}
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
+
           <div className="flex gap-2">
-            <span>
-              0<span className="text-sm ">Following</span>
+            <span className="hover:underline flex gap-1">
+              <span className="text-sm">{following}</span>
+              <span className="text-sm ">Following</span>
             </span>
-            <span>
-              0<span className="text-sm ">Followers</span>
+            <span className="hover:underline flex gap-1">
+              <span className="text-sm">{followers}</span>
+              <span className="text-sm ">Followers</span>
             </span>
           </div>
         </div>
@@ -114,10 +206,20 @@ export default function ProfilePage({
   }
   console.log(posts);
   return (
-    <div className="relative  min-w-[600px]">
+    <div className="relative border-r  min-w-[600px]">
       <Header />
       <ProfileDetails />
-      <PostFeed posts={posts} />
+      {loadingPosts && <PostFeedSceleton />}
+      {!loadingPosts && (
+        <>
+          {posts.length > 0 && <PostFeed posts={posts} />}
+          {posts.length == 0 && (
+            <div className="flex justify-center mt-4 w-full h-[500px] text-xl">
+              No posts yet
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

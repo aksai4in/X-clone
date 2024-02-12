@@ -6,8 +6,7 @@ type SearchParamProps = {
   searchParams: Record<string, string> | null | undefined;
 };
 
-export default function LoginOptions({ searchParams }: SearchParamProps) {
-  const show = searchParams?.show;
+export default function LoginOptions() {
   return (
     <>
       <GoogleButton name="Sign up with Google" />

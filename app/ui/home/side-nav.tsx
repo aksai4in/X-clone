@@ -106,7 +106,7 @@ export default function SideNav() {
                   <div
                     className={`${
                       pathname == path ? ACTIVE_ROUTE : INACTIVE_ROUTE
-                    } flex group-hover:bg-gray-200 pl-2 pr-6 transition duration-150 py-2 items-center  border-gray-300 justify-center gap-4 my-2 rounded-full`}
+                    } flex group-hover:bg-gray-200 px-2 xl:pr-6 transition duration-150 py-2 items-center  border-gray-300 justify-center gap-4 my-2 rounded-full`}
                   >
                     <Icon
                       className={`${

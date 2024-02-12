@@ -24,6 +24,7 @@ import { RiListRadio } from "react-icons/ri";
 import { FaRegSmile } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
 import { context } from "@/app/(main)/layout";
+import { PostFeedSceleton } from "../skeletons";
 
 export default function PostPage({
   params,
@@ -45,7 +46,24 @@ export default function PostPage({
       console.log(res);
     });
   }, [username]);
+
   const post_id = params.post_id;
+  function Header() {
+    function handleClick() {
+      window.scrollTo(0, 0);
+    }
+    return (
+      <div
+        onClick={handleClick}
+        className="sticky top-0 ml-2 h-[53px] items-center  cursor-pointer z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur"
+      >
+        <BackButton />
+        <div className="flex flex-col absolute left-14  text-xl">
+          <span className="font-bold">Post</span>
+        </div>
+      </div>
+    );
+  }
 
   function PostDetails() {
     const date = new Date(post.created_at);
@@ -70,11 +88,6 @@ export default function PostPage({
     return (
       <div className="border py-3 z-0 px-4  flex" key={post.post_id}>
         <div className="w-full z-0 border ">
-          {/* header1 */}
-          <div className="relative flex h-[53px] items-center ">
-            <BackButton />
-            <div className="absolute left-14 font-bold text-xl">Post</div>
-          </div>
           {/* header */}
           <div className="w-full flex items-center ">
             <div className="w-[44px] h-[44px] border">
@@ -133,9 +146,11 @@ export default function PostPage({
   }
   return (
     <div>
+      <Header />
       <PostDetails />
       <ReplyBox post_id={post_id} />
-      <PostFeed posts={replies} />
+      {replies.length > 0 && <PostFeed posts={replies} />}
+      {replies.length == 0 && <PostFeedSceleton />}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { sql } from "@vercel/postgres";
 import { signIn } from "next-auth/react";
-import { Post, PostUser, User } from "./definitions";
+import { DetailUser, Post, PostUser, User } from "./definitions";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -30,7 +30,7 @@ export async function getPosts(username: string): Promise<Post[]> {
       await sql<Post>`select users.username, users.email, users.name, users.image, users.verified, temp.post_id, temp.content, temp.created_at, temp.medialinks, temp.reply_post_id, temp.like_count, temp.liked  from users, (SELECT
         post.*,
         COUNT(likes.post_id) AS like_count,
-        count(case when likes.username='aksai4in' then 1 else Null end) as liked
+        count(case when likes.username=${username} then 1 else Null end) as liked
       FROM
         post
       LEFT JOIN
@@ -56,7 +56,7 @@ export async function getPost(username: string, post_id: number): Promise<any> {
         post
       LEFT JOIN
         likes ON post.post_id = likes.post_id
-      WHERE post.post_id=${post_id} and post.reply_post_id is Null
+      WHERE post.post_id=${post_id}
       GROUP BY
         post.post_id) as temp where users.username = temp.username ORDER BY temp.created_at desc;`;
     return posts.rows[0];
@@ -324,11 +324,71 @@ export async function createReply(
 
 export async function getUserByEmail(email: string) {
   const user = await sql`SELECT username FROM users WHERE email = ${email}`;
-  return user.rows[0].username;
+  return user.rows[0];
 }
 
-export async function getUser(username: string) {
-  const user =
-    await sql<User>`SELECT * FROM users WHERE username = ${username}`;
+export async function getUser(username: string, pageusername: string) {
+  const user = await sql<DetailUser>`
+  SELECT u.*, 
+       COUNT(f1.username_1) AS following,
+       COUNT(f2.username_2) AS followers,
+        CASE WHEN EXISTS (
+                  SELECT 1
+                  FROM follows f3
+                  WHERE f3.username_1 = ${username}
+                  AND f3.username_2 = ${pageusername}
+               ) THEN true ELSE false END AS follows
+  FROM users u
+  LEFT JOIN follows f1 ON u.username = f1.username_1
+  LEFT JOIN follows f2 ON u.username = f2.username_2
+  WHERE u.username = ${pageusername}
+  GROUP BY u.username;`;
+  console.log(username, pageusername);
   return user.rows[0];
+}
+
+export async function createAccount(
+  name: string,
+  email: string,
+  password: string,
+  username: string
+) {
+  try {
+    await sql<User>`INSERT INTO users (name, email, password, username) values (${name}, ${email}, ${password}, ${username}) `;
+
+    return true;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch revenue data.");
+  }
+}
+
+export async function insertUsername(
+  name: string,
+  email: string,
+  image: string,
+  username: string
+) {
+  try {
+    await sql<User>`INSERT INTO users (name, email, username, image) values (${name}, ${email}, ${username}, ${image}) `;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+export async function createFollow(username: string, follow_username: string) {
+  try {
+    await sql<User>`INSERT INTO follows (username_1, username_2) values (${username}, ${follow_username}) `;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+export async function deleteFollow(username: string, follow_username: string) {
+  try {
+    await sql<User>`DELETE FROM follows WHERE username_1=${username} and username_2=${follow_username}`;
+    return true;
+  } catch (err) {
+    return false;
+  }
 }

@@ -137,7 +137,7 @@ export function PostFeed({ posts }: { posts: any[] }) {
 function PostComponent({ post }: { post: any }) {
   const [username, bookmarked, setBookmarked] = useContext(context);
   const router = useRouter();
-  const [like_count, setLikeCount] = useState(post.like_count as number);
+  const [like_count, setLikeCount] = useState(parseInt(post.like_count));
   const [liked, setLiked] = useState(post.liked == 1);
   const [isBookmarked, setIsBookmarked] = useState(
     bookmarked.has(post.post_id)
@@ -172,10 +172,10 @@ function PostComponent({ post }: { post: any }) {
         console.log(`/${post.username}/${post.post_id}`);
         router.push(`/${post.username}/${post.post_id}`);
       }}
-      className="border py-3 z-0 px-4 hover:bg-gray-50 transition duration-150 flex"
+      className=" py-3 z-0 px-4 border-b border-r hover:bg-gray-50 cursor-pointer transition duration-150 flex"
       key={post.post_id}
     >
-      <div className="w-[44px] h-[44px] border">
+      <div className="w-[44px] h-[44px] ">
         <Avatar
           onClick={(e) => {
             e.stopPropagation();
@@ -187,7 +187,7 @@ function PostComponent({ post }: { post: any }) {
           src={post.image as string}
         />
       </div>
-      <div className="w-full z-0 border px-3">
+      <div className="w-full z-0  px-3">
         {/* header */}
         <div className="flex text-sm gap-1">
           <span
@@ -240,7 +240,7 @@ function PostComponent({ post }: { post: any }) {
         </div>
 
         {/* footer */}
-        <div className="border h-[32px] grid grid-cols-5 justify-items-center items-center">
+        <div className=" h-[32px] grid grid-cols-5 justify-items-center items-center">
           {/* replies */}
           <div>
             <FaComment />
@@ -375,7 +375,7 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
   }
   return (
     <div className={`w-full py-2 border flex bg-white  pr-2 pl-4 `}>
-      <div className="w-[44px] h-[44px] border ">
+      <div className="w-[44px] h-[44px]  ">
         <Avatar
           sx={{ width: 42, height: 42 }}
           alt="Remy Sharp"
@@ -383,7 +383,7 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
         />
       </div>
       <form action={formAction} className="w-full">
-        <div className="px-2 border w-full">
+        <div className="px-2  w-full">
           <input
             id="usename"
             type="hidden"
@@ -397,11 +397,11 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
             onFocus={() => setShowWhoCanReplyButton(true)}
             onInput={auto_grow}
             wrap="soft"
-            className="border w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
+            className=" w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
           ></textarea>
           <div id="media"></div>
           <div
-            className={`border ${
+            className={` ${
               showWhoCanReplyButton ? "block" : "hidden"
             } h-[37px]`}
           >
@@ -409,13 +409,13 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
               onClick={(e) => {
                 e.preventDefault();
               }}
-              className="flex items-center px-3 gap-1 transition duration-150 cursor-not-allowed border rounded-full  hover:bg-twitter-light text-twitter font-semibold text-sm p-1"
+              className="flex items-center px-3 gap-1 transition duration-150 cursor-not-allowed  rounded-full  hover:bg-twitter-light text-twitter font-semibold text-sm p-1"
             >
               <FaEarthAmericas />
               Everyone can reply
             </button>
           </div>
-          <div className="relative h-[48px] border flex gap-2 items-center  ">
+          <div className="relative h-[48px]  flex gap-2 items-center  ">
             <button
               onClick={handleUploadImage}
               className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-pointer hover:bg-twitter-light transition duration-150"

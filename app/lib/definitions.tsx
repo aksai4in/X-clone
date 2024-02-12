@@ -8,9 +8,22 @@ export type User = {
   password: string;
   date_of_birth: string;
   date_of_joining: string;
-  profile_photot: string;
+  profile_photo: string;
 };
 
+export type DetailUser = {
+  username: string;
+  name: string;
+  email: string;
+  image: string;
+  password: string;
+  date_of_birth: string;
+  date_of_joining: string;
+  profile_photo: string;
+  followers: string;
+  following: string;
+  follows: boolean;
+};
 export type Post = {
   post_id: number;
   username: string;
