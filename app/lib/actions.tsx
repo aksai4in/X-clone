@@ -259,37 +259,6 @@ export async function createPost(prevState: PostFromState, formData: FormData) {
   return post;
 }
 
-export async function createPost1(
-  prevState: PostFromState,
-  formData: FormData
-) {
-  console.log(formData.get("username") as string);
-  let url: string | null = null;
-  if (
-    formData.get("uploadImage") !== null &&
-    (formData.get("uploadImage") as File).size > 0
-  ) {
-    const date = new Date();
-    const imageRef = ref(storage, `images/media/${date.getTime()}`);
-    const snapshot = await uploadBytesResumable(
-      imageRef,
-      formData.get("uploadImage") as Blob
-    );
-    url = await getDownloadURL(snapshot.ref);
-  }
-  const result =
-    await sql<Post>`INSERT INTO post (content, username, medialinks) VALUES (${
-      formData.get("content") as string
-    }, ${
-      formData.get("username") as string
-    }, ARRAY[${url}]) RETURNING post_id;`;
-  const post_id = result.rows[0].post_id;
-  if (url != null) {
-    await sql`INSERT INTO media (post_id, link) VALUES (${post_id}, ${url})`;
-  }
-  // const post = await getPost(post_id);
-  return post_id;
-}
 export async function createReply(
   prevState: PostFromState,
   formData: FormData
@@ -318,8 +287,8 @@ export async function createReply(
   if (url != null) {
     await sql`INSERT INTO media (post_id, link) VALUES (${post_id}, ${url})`;
   }
-  revalidatePath("/home");
-  redirect("/home");
+  const post = await getPost(formData.get("username") as string, post_id);
+  return post;
 }
 
 export async function getUserByEmail(email: string) {

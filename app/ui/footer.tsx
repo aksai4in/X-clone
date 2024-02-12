@@ -40,7 +40,7 @@ export default function Footer() {
   return (
     <div className="mt-auto ml-5 mr-5 bottom-0 my-5 flex  flex-wrap justify-center">
       {links.map((link: { name: string; url: string }) => (
-        <LoginLink name={link.name} url={link.url} />
+        <LoginLink key={link.name} name={link.name} url={link.url} />
       ))}
     </div>
   );

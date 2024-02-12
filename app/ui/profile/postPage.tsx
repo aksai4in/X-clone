@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  bookmark,
   createPost,
   createReply,
+  dislike,
   getPost,
   getReplies,
   getUserByEmail,
+  like,
+  unbookmark,
 } from "@/app/lib/actions";
 import { Post } from "@/app/lib/definitions";
 import Image from "next/image";
@@ -13,7 +17,12 @@ import { useContext, useEffect, useState } from "react";
 import { MdVerified } from "react-icons/md";
 import { set } from "zod";
 import Avatar from "@mui/material/Avatar";
-import { HiDotsHorizontal, HiOutlinePhotograph } from "react-icons/hi";
+import {
+  HiBookmark,
+  HiDotsHorizontal,
+  HiOutlineBookmark,
+  HiOutlinePhotograph,
+} from "react-icons/hi";
 import { IoMdArrowBack } from "react-icons/io";
 import { BackButton } from "../buttons";
 import { useSession } from "next-auth/react";
@@ -21,10 +30,14 @@ import { PostFeed } from "../home/feed";
 import { useFormState } from "react-dom";
 import { HiOutlineGif } from "react-icons/hi2";
 import { RiListRadio } from "react-icons/ri";
-import { FaRegSmile } from "react-icons/fa";
+import { FaComment, FaRegSmile, FaRetweet } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
 import { context } from "@/app/(main)/layout";
 import { PostFeedSceleton } from "../skeletons";
+import { useRouter } from "next/navigation";
+import { GoHeart, GoHeartFill } from "react-icons/go";
+import { IoStatsChart } from "react-icons/io5";
+import { LuShare } from "react-icons/lu";
 
 export default function PostPage({
   params,
@@ -32,18 +45,43 @@ export default function PostPage({
   params: { username: string; post_id: number };
 }) {
   const [post, setPost] = useState({} as any);
-  const [username] = useContext(context);
+  const [username, bookmarked, setBookmarked] = useContext(context);
   const { data: session } = useSession();
   const [replies, setReplies] = useState([] as Post[]);
+  const [loading, setLoading] = useState(true);
+  const [date, setDate] = useState("");
+  const [liked, setLiked] = useState(false);
+  const [like_count, setLikeCount] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const router = useRouter();
   useEffect(() => {
     if (!username) return;
     getPost(username, post_id).then((res) => {
       setPost(res);
-      console.log(res);
+      const date = new Date(res.created_at);
+      const now = new Date();
+      const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+      const howRecent = Math.round(
+        (nowInHK.getTime() - date.getTime()) / 3600000
+      );
+      const detailOptions: Intl.DateTimeFormatOptions = {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      };
+      const detailedTime = new Intl.DateTimeFormat(
+        "en-US",
+        detailOptions
+      ).format(date);
+      const parts = detailedTime.split(",");
+      setDate(`${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`);
     });
     getReplies(username, post_id).then((res) => {
       setReplies(res);
-      console.log(res);
+      setLoading(false);
     });
   }, [username]);
 
@@ -55,7 +93,7 @@ export default function PostPage({
     return (
       <div
         onClick={handleClick}
-        className="sticky top-0 ml-2 h-[53px] items-center  cursor-pointer z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur"
+        className="sticky top-0  h-[53px] items-center  cursor-pointer z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur"
       >
         <BackButton />
         <div className="flex flex-col absolute left-14  text-xl">
@@ -66,43 +104,41 @@ export default function PostPage({
   }
 
   function PostDetails() {
-    const date = new Date(post.created_at);
-    const now = new Date();
-    const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-    const howRecent = Math.round(
-      (nowInHK.getTime() - date.getTime()) / 3600000
-    );
-    const detailOptions: Intl.DateTimeFormatOptions = {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    };
-    // const detailedTime = new Intl.DateTimeFormat("en-US", detailOptions).format(
-    //   date
-    // );
-    // const parts = detailedTime.split(",");
-    // const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
     return (
-      <div className="border py-3 z-0 px-4  flex" key={post.post_id}>
-        <div className="w-full z-0 border ">
+      <div className=" py-3 z-0 px-4  flex border-b" key={post.post_id}>
+        <div className="w-full z-0  ">
           {/* header */}
           <div className="w-full flex items-center ">
-            <div className="w-[44px] h-[44px] border">
+            <div className="w-[44px] h-[44px] ">
               <Avatar
+                className="cursor-pointer"
                 sx={{ width: 42, height: 42, zIndex: 0 }}
                 alt="Remy Sharp"
                 src={post.image as string}
+                onClick={() => {
+                  router.push(`/${post.username}`);
+                }}
               />
             </div>
-            <div className="w-full relative flex flex-col px-2 border text-sm gap-1">
-              <span className="font-semibold flex gap-1">
+            <div className="w-full relative flex flex-col px-2  text-sm gap-1">
+              <span
+                onClick={() => {
+                  router.push(`/${post.username}`);
+                }}
+                className="font-semibold flex gap-1 cursor-pointer hover:underline"
+              >
                 {post.name}
                 <MdVerified className="text-xl text-twitter" />{" "}
               </span>
-              <span className="border text-gray-600 "> @{post.username}</span>
+              <span
+                onClick={() => {
+                  router.push(`/${post.username}`);
+                }}
+                className=" text-gray-600 cursor-pointer"
+              >
+                {" "}
+                @{post.username}
+              </span>
             </div>
             {username != post.username && (
               <button className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white">
@@ -132,14 +168,87 @@ export default function PostPage({
             )}
           </div>
           {/* time */}
-          <div className="relative w-40 group border text-gray-600  text-sm">
-            <div className=" hover:underline">{"reorderedDate"}</div>
+          <div className="relative w-40 group  text-gray-600  text-sm">
+            <div className=" hover:underline">{date}</div>
 
             <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4  text-nowrap hidden group-hover:block">
-              {"reorderedDate"}
+              {date}
             </div>
           </div>
           {/* footer */}
+          <div className=" h-[32px] grid grid-cols-5 justify-items-center items-center">
+            {/* replies */}
+            <div>
+              <FaComment />
+            </div>
+            {/* reposts */}
+            <div>
+              <FaRetweet />
+            </div>
+            {/* likes */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (liked) {
+                  dislike(username, post.post_id).then((res) => {
+                    if (res) {
+                      setLikeCount(like_count - 1);
+                      setLiked(false);
+                    }
+                  });
+                } else {
+                  like(username, post.post_id).then((res) => {
+                    if (res) {
+                      setLikeCount(like_count + 1);
+                      setLiked(true);
+                    }
+                  });
+                }
+              }}
+              className="flex items-center gap-1"
+            >
+              <GoHeart className={liked ? "hidden" : "block"} />
+              <GoHeartFill className={liked ? "block" : "hidden"} />
+              <div id="likes" className="text-sm">
+                {like_count}
+              </div>
+            </button>
+            {/* views */}
+            <div>
+              <IoStatsChart />
+            </div>
+            {/* bookmark & share */}
+            <div className="flex">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (bookmarked.has(post.post_id)) {
+                    unbookmark(username, post.post_id).then((res) => {
+                      if (res) {
+                        bookmarked.delete(post.post_id);
+                        setBookmarked(bookmarked);
+                        setIsBookmarked(false);
+                      }
+                    });
+                  } else {
+                    bookmark(username, post.post_id).then((res) => {
+                      if (res) {
+                        bookmarked.add(post.post_id);
+                        setBookmarked(bookmarked);
+                        setIsBookmarked(true);
+                      }
+                    });
+                  }
+                }}
+              >
+                <HiOutlineBookmark
+                  className={isBookmarked ? "hidden" : "block"}
+                />
+                <HiBookmark className={isBookmarked ? "block" : "hidden"} />
+              </button>
+              <LuShare />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -148,24 +257,35 @@ export default function PostPage({
     <div>
       <Header />
       <PostDetails />
-      <ReplyBox post_id={post_id} />
-      {replies.length > 0 && <PostFeed posts={replies} />}
-      {replies.length == 0 && <PostFeedSceleton />}
+      <ReplyBox
+        post_id={post_id}
+        posts={replies}
+        setPosts={setReplies}
+        params={params}
+      />
+      {!loading && <PostFeed posts={replies} />}
+      {loading && <PostFeedSceleton />}
     </div>
   );
 }
-function ReplyBox({ post_id }: { post_id: number }) {
-  const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
+function ReplyBox({
+  post_id,
+  posts,
+  setPosts,
+  params,
+}: {
+  post_id: number;
+  posts: any[];
+  setPosts: any;
+  params: any;
+}) {
   const { data: session } = useSession();
   const initialState = { error: null, message: "" };
   const [postButtonDisabled, setPostButtonDisabled] = useState(true);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useContext(context);
   const [state, formAction] = useFormState(createReply, initialState);
-  useEffect(() => {
-    getUserByEmail(session?.user?.email as string).then((user) => {
-      setUsername(user);
-    });
-  }, []);
+  const [showReplyButtons, setShowReplyButtons] = useState(false);
+  const router = useRouter();
   const uploadPhoto = (e: any) => {
     const media = document.getElementById("media") as HTMLImageElement;
     for (let i = 0; i < e.target.files.length; i++) {
@@ -175,9 +295,21 @@ function ReplyBox({ post_id }: { post_id: number }) {
       media.appendChild(image);
     }
   };
+  useEffect(() => {
+    if (state.username) {
+      const textArea = document.getElementById(
+        "text-area"
+      ) as HTMLTextAreaElement;
+      const content = textArea?.value;
+      textArea.value = "";
+      console.log(state);
+      const stateArr = new Array(state);
+      setPosts(stateArr.concat(posts));
+    }
+  }, [state]);
   const handleUploadImage = (e: any) => {
     e.preventDefault();
-    if (!showWhoCanReplyButton) {
+    if (!showReplyButtons) {
       const textArea = document.getElementById(
         "text-area"
       ) as HTMLTextAreaElement;
@@ -199,91 +331,105 @@ function ReplyBox({ post_id }: { post_id: number }) {
     e.target.style.height = e.target.scrollHeight + "px";
   }
   return (
-    <div className={`w-full py-2 border flex bg-white  pr-2 pl-4 `}>
-      <div className="w-[44px] h-[44px] border ">
-        <Avatar
-          sx={{ width: 42, height: 42 }}
-          alt="Remy Sharp"
-          src={session?.user?.image as string}
-        />
-      </div>
-      <form action={formAction} className="w-full">
-        <div className="px-2 border w-full">
-          <input
-            id="usename"
-            type="hidden"
-            name="username"
-            value={username}
-          ></input>
-          <input
-            id="post_id"
-            type="hidden"
-            name="post_id"
-            value={post_id}
-          ></input>
-          <textarea
-            id="text-area"
-            placeholder="What is happening?"
-            name="content"
-            onFocus={() => setShowWhoCanReplyButton(true)}
-            onInput={auto_grow}
-            wrap="soft"
-            className="border w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
-          ></textarea>
-          <div id="media"></div>
-          <div
-            className={`border ${
-              showWhoCanReplyButton ? "block" : "hidden"
-            } h-[37px]`}
-          >
-            {/* <button
-              onClick={(e) => {
-                e.preventDefault();
+    <div className={`w-full py-2  flex flex-col bg-white border-b  pr-2 pl-4 `}>
+      {showReplyButtons && (
+        <>
+          <div className="pl-14 text-sm text-gray-500">
+            Replying to{" "}
+            <span
+              onClick={() => {
+                router.push(`/${params.username}`);
               }}
-              className="flex items-center px-3 gap-1 transition duration-150 cursor-not-allowed border rounded-full  hover:bg-twitter-light text-twitter font-semibold text-sm p-1"
+              className=" cursor-pointer text-twitter "
             >
-              <FaEarthAmericas />
-              Everyone can reply
-            </button> */}
+              {" "}
+              @{params.username}
+            </span>
           </div>
-          <div className="relative h-[48px] border flex gap-2 items-center  ">
-            <button
-              onClick={handleUploadImage}
-              className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-pointer hover:bg-twitter-light transition duration-150"
-            >
-              <HiOutlinePhotograph className=" text-twitter text-xl " />
-            </button>
+        </>
+      )}
 
-            <input
-              multiple={true}
-              type="file"
-              onChange={uploadPhoto}
-              className="hidden"
-              name="uploadImage"
-              id="uploadImage"
-            />
-            <div className="w-[34px] h-[34px] cursor-not-allowed flex items-center justify-center rounded-full  hover:bg-twitter-light transition duration-150">
-              <HiOutlineGif className=" text-twitter text-xl " />
-            </div>
-
-            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-not-allowed hover:bg-twitter-light transition duration-150">
-              <FaRegSmile className="text-twitter text-xl" />
-            </div>
-
-            <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full ">
-              <GrLocation className="text-twitter text-xl opacity-60" />
-            </div>
-
-            <button
-              disabled={postButtonDisabled}
-              type="submit"
-              className={`absolute right-0 bottom-1 flex  w-[66px] h-[36px] bg-twitter hover:bg-twitter-dark transition duration-200 items-center  border-gray-300 justify-center gap-2 rounded-full`}
-            >
-              <span className="text-sm font-semibold text-white">Post</span>
-            </button>
-          </div>
+      <div className="flex">
+        <div className="w-[44px] h-[44px]  ">
+          <Avatar
+            sx={{ width: 42, height: 42 }}
+            alt="Remy Sharp"
+            src={session?.user?.image as string}
+          />
         </div>
-      </form>
+        <form action={formAction} className="w-full">
+          <div className="px-2  w-full">
+            <input
+              id="usename"
+              type="hidden"
+              name="username"
+              value={username}
+            ></input>
+            <input
+              id="post_id"
+              type="hidden"
+              name="post_id"
+              value={post_id}
+            ></input>
+
+            <textarea
+              id="text-area"
+              placeholder="Post your reply"
+              name="content"
+              onFocus={() => {
+                setShowReplyButtons(true);
+              }}
+              onInput={auto_grow}
+              wrap="soft"
+              className="pl-2 placeholder:text-gray-500 w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
+            ></textarea>
+            <div id="media"></div>
+
+            <div className="relative">
+              {showReplyButtons && (
+                <>
+                  <div className=" h-[48px]  flex gap-2 items-center  ">
+                    <button
+                      onClick={handleUploadImage}
+                      className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-pointer hover:bg-twitter-light transition duration-150"
+                    >
+                      <HiOutlinePhotograph className=" text-twitter text-xl " />
+                    </button>
+
+                    <input
+                      multiple={true}
+                      type="file"
+                      onChange={uploadPhoto}
+                      className="hidden"
+                      name="uploadImage"
+                      id="uploadImage"
+                    />
+                    <div className="w-[34px] h-[34px] cursor-not-allowed flex items-center justify-center rounded-full  hover:bg-twitter-light transition duration-150">
+                      <HiOutlineGif className=" text-twitter text-xl " />
+                    </div>
+
+                    <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full cursor-not-allowed hover:bg-twitter-light transition duration-150">
+                      <FaRegSmile className="text-twitter text-xl" />
+                    </div>
+
+                    <div className="w-[34px] h-[34px] flex items-center justify-center rounded-full ">
+                      <GrLocation className="text-twitter text-xl opacity-60" />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <button
+                disabled={postButtonDisabled}
+                type="submit"
+                className={`absolute right-0 bottom-1 flex  w-[66px] h-[36px] bg-twitter hover:bg-twitter-dark transition duration-200 items-center  border-gray-300 justify-center gap-2 rounded-full`}
+              >
+                <span className="text-sm font-semibold text-white">Post</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

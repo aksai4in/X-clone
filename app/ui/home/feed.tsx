@@ -128,7 +128,7 @@ export function PostFeed({ posts }: { posts: any[] }) {
   return (
     <div id="post-feed">
       {posts.map((post) => (
-        <PostComponent post={post} />
+        <PostComponent key={post.post_id} post={post} />
       ))}
     </div>
   );
@@ -173,7 +173,6 @@ function PostComponent({ post }: { post: any }) {
         router.push(`/${post.username}/${post.post_id}`);
       }}
       className=" py-3 z-0 px-4 border-b border-r hover:bg-gray-50 cursor-pointer transition duration-150 flex"
-      key={post.post_id}
     >
       <div className="w-[44px] h-[44px] ">
         <Avatar

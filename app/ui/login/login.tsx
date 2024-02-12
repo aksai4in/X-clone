@@ -137,7 +137,7 @@ export default function Login() {
                   </button>
                 </form>
                 <div className="mt-4 mb-5">
-                  <span>Don't have an account? </span>
+                  <span>{`Don't have an account?`}</span>
                   <Link className="hover:underline text-twitter" href="/signUp">
                     Sign up
                   </Link>
