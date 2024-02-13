@@ -1,11 +1,11 @@
 "use client";
-import { context } from "@/app/(main)/layout";
 import { getUserByEmail } from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { signOut, useSession } from "next-auth/react";
 import { useContext, useEffect, useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { set } from "zod";
+import { context } from "../mainLayout";
 
 export default function ProfileButton() {
   const { data: session } = useSession();

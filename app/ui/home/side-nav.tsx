@@ -34,7 +34,7 @@ import {
   HiUser,
 } from "react-icons/hi";
 import { useContext } from "react";
-import { context } from "@/app/(main)/layout";
+import { context } from "../mainLayout";
 const ACTIVE_ROUTE = "font-bold";
 const INACTIVE_ROUTE = "";
 export default function SideNav() {
@@ -72,12 +72,12 @@ export default function SideNav() {
       icon1: HiOutlineUser,
       icon2: HiUser,
     },
-    {
-      name: "More",
-      url: "/more",
-      icon1: HiOutlineDotsCircleHorizontal,
-      icon2: HiOutlineDotsCircleHorizontal,
-    },
+    // {
+    //   name: "More",
+    //   url: "/more",
+    //   icon1: HiOutlineDotsCircleHorizontal,
+    //   icon2: HiOutlineDotsCircleHorizontal,
+    // },
   ];
   return (
     <div className="sticky top-0 min-w-[72px] border w-full h-screen flex justify-end ">
@@ -125,6 +125,15 @@ export default function SideNav() {
                 </Link>
               );
             })}
+            <button className="w-[50px] h-[50px] xl:w-full flex group xl:justify-start justify-center items-center">
+              <div
+                className={` cursor-not-allowed flex group-hover:bg-gray-200 px-2 xl:pr-6 transition duration-150 py-2 items-center  border-gray-300 justify-center gap-4 my-2 rounded-full`}
+              >
+                <HiOutlineDotsCircleHorizontal className={` text-3xl`} />
+
+                <span className={` text-xl hidden xl:block`}>{`More`}</span>
+              </div>
+            </button>
           </div>
           <button
             className={`flex w-[50px] xl:w-[220px] h-[50px] bg-twitter hover:bg-twitter-dark transition duration-200 py-2 items-center  border-gray-300 justify-center gap-2 my-2 rounded-full`}

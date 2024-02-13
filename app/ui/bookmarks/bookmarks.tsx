@@ -3,9 +3,9 @@ import { useContext, useEffect, useState } from "react";
 import { PostFeed } from "../home/feed";
 import { getBookmarkedPosts } from "@/app/lib/actions";
 import { useSession } from "next-auth/react";
-import { context } from "@/app/(main)/layout";
 import { PostFeedSceleton } from "../skeletons";
 import { BackButton } from "../buttons";
+import { context } from "../mainLayout";
 
 export default function Bookmarks() {
   const [username, bookmarked] = useContext(context);

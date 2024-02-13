@@ -41,9 +41,9 @@ import { useRouter } from "next/navigation";
 import { GoHeart, GoHeartFill } from "react-icons/go";
 import { IoStatsChart } from "react-icons/io5";
 import { LuShare } from "react-icons/lu";
-import { context } from "@/app/(main)/layout";
 import ReactDOM from "react-dom";
 import { AiOutlineClose } from "react-icons/ai";
+import { context } from "../mainLayout";
 // const postPromise = fetch("/api/posts").then((res) => res.json());
 
 export default function Feed() {

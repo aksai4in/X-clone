@@ -34,12 +34,12 @@ import { HiOutlineGif } from "react-icons/hi2";
 import { RiListRadio } from "react-icons/ri";
 import { FaComment, FaRegSmile, FaRetweet } from "react-icons/fa";
 import { GrLocation } from "react-icons/gr";
-import { context } from "@/app/(main)/layout";
 import { PostFeedSceleton } from "../skeletons";
 import { useRouter } from "next/navigation";
 import { GoHeart, GoHeartFill } from "react-icons/go";
 import { IoStatsChart } from "react-icons/io5";
 import { LuShare } from "react-icons/lu";
+import { context } from "../mainLayout";
 
 export default function PostPage({
   params,

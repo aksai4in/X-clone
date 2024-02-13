@@ -10,13 +10,13 @@ import { useContext, useEffect, useState } from "react";
 import { BackButton } from "../buttons";
 import { useSession } from "next-auth/react";
 import { PostFeed } from "../home/feed";
-import { context } from "@/app/(main)/layout";
 import Image from "next/image";
 import Avatar from "@mui/material/Avatar";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { MdVerified } from "react-icons/md";
 import { HiOutlineCalendarDays } from "react-icons/hi2";
 import { PostFeedSceleton } from "../skeletons";
+import { context } from "../mainLayout";
 
 export default function ProfilePage({
   params,
