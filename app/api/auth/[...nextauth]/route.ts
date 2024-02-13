@@ -5,7 +5,6 @@ import { User } from "@/app/lib/definitions";
 import { sql } from "@vercel/postgres";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
@@ -16,7 +15,7 @@ async function getUser(email: string): Promise<User | undefined> {
     throw new Error("Failed to fetch user.");
   }
 }
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   callbacks: {
     async redirect({ url, baseUrl }) {
       console.log("url", url);
