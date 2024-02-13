@@ -201,7 +201,7 @@ function PostComponent({
   // date formatting
   const date = new Date(post.created_at);
   const now = new Date();
-  const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+  const nowInHK = new Date(now.getTime());
   const howRecent = Math.round((nowInHK.getTime() - date.getTime()) / 3600000);
   const options: Intl.DateTimeFormatOptions = {
     month: "short",

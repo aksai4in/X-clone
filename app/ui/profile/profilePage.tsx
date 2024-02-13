@@ -89,7 +89,7 @@ export default function ProfilePage({
         <img
           src={user.profile_photo ? user.profile_photo : "/gray.png"}
           alt={"image"}
-          className="w-full h-[200px] object-cover"
+          className="w-full  object-cover"
         ></img>
         <Avatar
           sx={{ width: 134, height: 134 }}
