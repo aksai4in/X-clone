@@ -19,7 +19,8 @@ export default function SetUsernamePage() {
   };
   const router = useRouter();
 
-  const updateUsername = () => {
+  const updateUsername = (e: any) => {
+    e.preventDefault();
     insertUsername(
       session?.user?.name as string,
       session?.user?.email as string,
