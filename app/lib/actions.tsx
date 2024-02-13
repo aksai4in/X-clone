@@ -45,6 +45,28 @@ export async function getPosts(username: string): Promise<Post[]> {
   }
   //   await new Promise((resolve) => setTimeout(resolve, 2000));
 }
+export async function getFollowingPosts(username: string): Promise<Post[]> {
+  try {
+    const posts =
+      await sql<Post>`select users.username, users.email, users.name, users.image, users.verified, temp.post_id, temp.content, temp.created_at, temp.medialinks, temp.reply_post_id, temp.like_count, temp.liked  from users, (SELECT
+        post.*,
+        COUNT(likes.post_id) AS like_count,
+        count(case when likes.username=${username} then 1 else Null end) as liked
+      FROM
+        post
+      LEFT JOIN
+        likes ON post.post_id = likes.post_id
+      WHERE post.reply_post_id is Null
+      GROUP BY
+        post.post_id) as temp where users.username in (select username_2 from follows where username_1=${username}) and users.username = temp.username ORDER BY temp.created_at desc;`;
+    return posts.rows;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch revenue data.");
+  }
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
+}
+
 export async function getPost(username: string, post_id: number): Promise<any> {
   try {
     const posts =
@@ -92,7 +114,17 @@ export async function getUserPosts(username: string): Promise<any[]> {
 export async function getBookmarkedPosts(username: string): Promise<any[]> {
   try {
     const posts =
-      await sql<any>`select * from users join (select bookmarks.*, post.content, post.medialinks, post.post_id, post.created_at, post.reply_post_id  from bookmarks, post where bookmarks.username=${username} and bookmarks.post_id = post.post_id) as temp on users.username = temp.username;`;
+      await sql<any>`select users.username, users.email, users.name, users.image, users.verified, temp.post_id, temp.content, temp.created_at, temp.medialinks, temp.reply_post_id, temp.like_count, temp.liked  from users, (SELECT
+        post.*,
+        COUNT(likes.post_id) AS like_count,
+        count(case when likes.username=${username} then 1 else Null end) as liked
+      FROM
+        post
+      LEFT JOIN
+        likes ON post.post_id = likes.post_id
+      WHERE post.post_id in (select post_id from bookmarks where username=${username})
+      GROUP BY
+        post.post_id) as temp where users.username = temp.username ORDER BY temp.created_at desc;`;
     return posts.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -110,6 +142,7 @@ export async function likedPosts(username: string): Promise<Post[]> {
   }
   //   await new Promise((resolve) => setTimeout(resolve, 2000));
 }
+
 // export async function getPost(post_id: string): Promise<any[]> {
 //   try {
 //     const post =
@@ -129,7 +162,8 @@ export async function getReplies(
     const post =
       await sql<any>`select users.username, users.email, users.name, users.image, users.verified, temp.post_id, temp.content, temp.created_at, temp.medialinks, temp.reply_post_id, temp.like_count  from users, (SELECT
         post.*,
-        COUNT(likes.post_id) AS like_count
+        COUNT(likes.post_id) AS like_count,
+        count(case when likes.username=${username} then 1 else Null end) as liked
       FROM
         post
       LEFT JOIN
@@ -152,7 +186,7 @@ export async function getBookmarkedPostIds(username: string) {
     return posts.rows;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 
@@ -162,7 +196,7 @@ export async function like(username: string, post_id: string) {
     return true;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 export async function dislike(username: string, post_id: string) {
@@ -171,7 +205,7 @@ export async function dislike(username: string, post_id: string) {
     return true;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 export async function bookmark(username: string, post_id: string) {
@@ -180,7 +214,7 @@ export async function bookmark(username: string, post_id: string) {
     return true;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 export async function unbookmark(username: string, post_id: string) {
@@ -189,7 +223,7 @@ export async function unbookmark(username: string, post_id: string) {
     return true;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 export async function getLikes(post_id: string) {
@@ -199,7 +233,7 @@ export async function getLikes(post_id: string) {
     return likes.rows[0];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 export async function existsLike(username: string, post_id: string) {
@@ -213,7 +247,7 @@ export async function existsLike(username: string, post_id: string) {
     }
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error(error as string);
   }
 }
 
@@ -356,6 +390,18 @@ export async function createFollow(username: string, follow_username: string) {
 export async function deleteFollow(username: string, follow_username: string) {
   try {
     await sql<User>`DELETE FROM follows WHERE username_1=${username} and username_2=${follow_username}`;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+export async function deletePost(post_id: string) {
+  try {
+    await sql<User>`DELETE FROM media WHERE post_id=${post_id}`;
+    await sql<User>`DELETE FROM likes WHERE post_id=${post_id}`;
+    await sql<User>`DELETE FROM post WHERE reply_post_id=${post_id}`;
+    await sql<User>`DELETE FROM bookmarks WHERE post_id=${post_id}`;
+    await sql<User>`DELETE FROM post WHERE post_id=${post_id}`;
     return true;
   } catch (err) {
     return false;

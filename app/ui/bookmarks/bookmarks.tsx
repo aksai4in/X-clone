@@ -49,7 +49,7 @@ export default function Bookmarks() {
       {isLoading && <PostFeedSceleton />}
       {!isLoading && (
         <>
-          {posts.length > 0 && <PostFeed posts={posts} />}
+          {posts.length > 0 && <PostFeed posts={posts} setPosts={setPosts} />}
           {posts.length == 0 && (
             <div className="flex-col flex items-center font-bold mt-4 w-full h-screen text-xl">
               <span className="flex justify-center ">Save posts for later</span>

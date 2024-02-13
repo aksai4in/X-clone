@@ -33,7 +33,7 @@ export default function ProfileButton() {
   }, [showMenu]);
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <button
         onClick={handleClick}
         className={`flex px-3 w-[64px] xl:w-[240px] h-[64px] hover:bg-gray-200 transition duration-200 py-2 items-center  border-gray-300  gap-2 my-2 rounded-full`}
@@ -55,7 +55,7 @@ export default function ProfileButton() {
       </button>
       {showMenu && (
         <div
-          className={`my-element z-11 bg-white border absolute shadow-lg py-3 rounded-xl w-[300px] -top-32 -left-[110px] xl:-left-[30px]`}
+          className={`my-element z-11 bg-white  border absolute shadow-lg py-3 rounded-xl w-[280px] -top-32 -translate-x-1/2 left-1/2 `}
         >
           <button className="py-2 cursor-not-allowed text-left font-semibold w-full hover:bg-gray-100 px-3 transition duration-200">
             Add existing account

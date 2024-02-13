@@ -4,6 +4,7 @@ import {
   bookmark,
   createPost,
   createReply,
+  deletePost,
   dislike,
   getPost,
   getReplies,
@@ -22,6 +23,7 @@ import {
   HiDotsHorizontal,
   HiOutlineBookmark,
   HiOutlinePhotograph,
+  HiOutlineTrash,
 } from "react-icons/hi";
 import { IoMdArrowBack } from "react-icons/io";
 import { BackButton } from "../buttons";
@@ -46,24 +48,23 @@ export default function PostPage({
 }) {
   const [post, setPost] = useState({} as any);
   const [username, bookmarked, setBookmarked] = useContext(context);
-  const { data: session } = useSession();
   const [replies, setReplies] = useState([] as Post[]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState("");
   const [liked, setLiked] = useState(false);
   const [like_count, setLikeCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
   const router = useRouter();
   useEffect(() => {
     if (!username) return;
     getPost(username, post_id).then((res) => {
+      console.log(res);
       setPost(res);
+      setLiked(res.liked == "1");
+      setLikeCount(parseInt(res.like_count));
+      setIsBookmarked(bookmarked.has(post_id));
       const date = new Date(res.created_at);
-      const now = new Date();
-      const nowInHK = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-      const howRecent = Math.round(
-        (nowInHK.getTime() - date.getTime()) / 3600000
-      );
       const detailOptions: Intl.DateTimeFormatOptions = {
         hour: "numeric",
         minute: "numeric",
@@ -102,13 +103,26 @@ export default function PostPage({
       </div>
     );
   }
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (showDeleteButton && !event.target.closest(".my-element")) {
+        setShowDeleteButton(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [showDeleteButton]);
 
   function PostDetails() {
     return (
       <div className=" py-3 z-0 px-4  flex border-b" key={post.post_id}>
         <div className="w-full z-0  ">
           {/* header */}
-          <div className="w-full flex items-center ">
+          <div className="w-full flex items-center  pt-2">
             <div className="w-[44px] h-[44px] ">
               <Avatar
                 className="cursor-pointer"
@@ -128,7 +142,10 @@ export default function PostPage({
                 className="font-semibold flex gap-1 cursor-pointer hover:underline"
               >
                 {post.name}
-                <MdVerified className="text-xl text-twitter" />{" "}
+
+                {post.verified && (
+                  <MdVerified className="text-xl text-twitter" />
+                )}
               </span>
               <span
                 onClick={() => {
@@ -139,15 +156,49 @@ export default function PostPage({
                 {" "}
                 @{post.username}
               </span>
+              {username == post.username && (
+                <div className="">
+                  {showDeleteButton && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletePost(post.post_id).then((res) => {
+                            if (res) {
+                              router.back();
+                            }
+                          });
+                        }}
+                        className="absolute top-0 w-[150px] bg-white right-0 pr-6 pl-4 hover:bg-gray-200 transition duration-150 font-semibold z-30 py-2 rounded-xl border flex  items-center text-red-500 gap-2"
+                      >
+                        <HiOutlineTrash className=" text-lg" />
+                        Delete
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeleteButton(true);
+                    }}
+                    className=" absolute z-0 transition duration-150  right-0  top-0  flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light "
+                  >
+                    <HiDotsHorizontal />
+                  </button>
+                </div>
+              )}
+              {username != post.username && (
+                <button className="transition duration-150 absolute right-0 top-0 cursor-not-allowed  flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
+                  <HiDotsHorizontal />
+                </button>
+              )}
             </div>
-            {username != post.username && (
+            {/* {username != post.username && (
               <button className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white">
                 Follow
               </button>
-            )}
-            <button className="flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
-              <HiDotsHorizontal />
-            </button>
+            )} */}
           </div>
           {/* content */}
           <div className="text-wrap break-all py-2">{post.content}</div>
@@ -263,7 +314,7 @@ export default function PostPage({
         setPosts={setReplies}
         params={params}
       />
-      {!loading && <PostFeed posts={replies} />}
+      {!loading && <PostFeed posts={replies} setPosts={setReplies} />}
       {loading && <PostFeedSceleton />}
     </div>
   );
@@ -381,7 +432,7 @@ function ReplyBox({
               }}
               onInput={auto_grow}
               wrap="soft"
-              className="pl-2 placeholder:text-gray-500 w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
+              className="pl-1 placeholder:text-gray-500 w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
             ></textarea>
             <div id="media"></div>
 

@@ -87,11 +87,7 @@ export default function ProfilePage({
     return (
       <div className="relative border-b  ">
         <img
-          src={
-            user.profile_photo
-              ? user.profile_photo
-              : "/plain-gray-background.jpg"
-          }
+          src={user.profile_photo ? user.profile_photo : "/gray.png"}
           alt={"image"}
           className="w-full h-[200px] object-cover"
         ></img>
@@ -102,11 +98,11 @@ export default function ProfilePage({
           src={user.image as string}
         />
         <div className="border w-full h-16 pr-4 gap-2 flex justify-end items-center">
-          <button className="flex border justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
-            <HiDotsHorizontal />
-          </button>
           {username != params.username && (
             <>
+              <button className="flex cursor-not-allowed border justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
+                <HiDotsHorizontal />
+              </button>
               {user.username && (
                 <>
                   {!follows && (
@@ -120,13 +116,29 @@ export default function ProfilePage({
                   {follows && (
                     <button
                       onClick={unfollow}
-                      className="h-[32px] font-semibold text-sm rounded-full px-3 bg-black text-white"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.textContent = "Unfollow";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.textContent = "Following";
+                      }}
+                      className="h-[32px] w-[103px] font-semibold text-sm rounded-full px-3 border transition duration-150 hover:bg-red-100 hover:border-red-400 hover:text-red-600"
                     >
-                      Unfollow
+                      Following
                     </button>
                   )}
                 </>
               )}
+            </>
+          )}
+          {username == params.username && (
+            <>
+              <button
+                onClick={follow}
+                className="h-[32px] px-4 font-semibold text-sm rounded-full border hover:bg-gray-200 transition duration-150"
+              >
+                Edit profile
+              </button>
             </>
           )}
         </div>
@@ -212,7 +224,7 @@ export default function ProfilePage({
       {loadingPosts && <PostFeedSceleton />}
       {!loadingPosts && (
         <>
-          {posts.length > 0 && <PostFeed posts={posts} />}
+          {posts.length > 0 && <PostFeed posts={posts} setPosts={setPosts} />}
           {posts.length == 0 && (
             <div className="flex justify-center mt-4 w-full h-[500px] text-xl">
               No posts yet

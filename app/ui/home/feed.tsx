@@ -14,6 +14,8 @@ import {
   getUserByEmail,
   like,
   unbookmark,
+  getFollowingPosts,
+  deletePost,
 } from "@/app/lib/actions";
 import Avatar from "@mui/material/Avatar";
 import { useSession } from "next-auth/react";
@@ -24,8 +26,10 @@ import SideNav from "./side-nav";
 import { FaEarthAmericas, FaRegFaceSmile } from "react-icons/fa6";
 import {
   HiBookmark,
+  HiDotsHorizontal,
   HiOutlineBookmark,
   HiOutlinePhotograph,
+  HiOutlineTrash,
 } from "react-icons/hi";
 import { PiUploadLight } from "react-icons/pi";
 import { HiOutlineFaceSmile, HiOutlineGif } from "react-icons/hi2";
@@ -39,27 +43,76 @@ import { IoStatsChart } from "react-icons/io5";
 import { LuShare } from "react-icons/lu";
 import { context } from "@/app/(main)/layout";
 import ReactDOM from "react-dom";
+import { AiOutlineClose } from "react-icons/ai";
 // const postPromise = fetch("/api/posts").then((res) => res.json());
 
 export default function Feed() {
-  const [data, setData] = useState([] as Post[]);
+  const [posts, setPosts] = useState([] as Post[]);
+  const [followingPosts, setFollowingPosts] = useState([] as Post[]);
   const [isLoading, setIsLoading] = useState(true);
   const [username, bookmarked, setBookmarked] = useContext(context);
   const { data: session } = useSession();
+  const [contentType, setContentType] = useState(1);
   useEffect(() => {
     if (username != "") {
-      console.log("fetching posts");
       getPosts(username).then((res) => {
-        console.log("done");
-        setData(res);
+        setPosts(res);
         setIsLoading(false);
+      });
+      getFollowingPosts(username).then((res) => {
+        setFollowingPosts(res);
       });
     }
   }, [username]);
 
   useEffect(() => {
     console.log("data changed");
-  }, [data]);
+  }, [posts]);
+
+  function FeedSelectionButtons() {
+    return (
+      <div className="sticky  top-0 z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur">
+        <button
+          onClick={() => {
+            setContentType(1);
+          }}
+          className="hover:bg-opacity-30 hover:backdrop-blur hover:bg-gray-300 transition duration-150  h-[53px] w-[50%] flex items-center justify-center"
+        >
+          <div
+            className={`${
+              contentType == 1 ? "" : " text-neutral-500 "
+            } font-semibold text-sm relative h-full  flex items-center `}
+          >
+            For you
+            <div
+              className={`${
+                contentType == 1 ? "block" : "hidden"
+              } absolute bottom-0 w-full h-1 bg-twitter rounded-full`}
+            ></div>
+          </div>
+        </button>
+        <button
+          onClick={() => {
+            setContentType(2);
+          }}
+          className="hover:bg-opacity-30 hover:backdrop-blur hover:bg-gray-300 transition duration-150  h-[53px] w-1/2 flex items-center justify-center "
+        >
+          <div
+            className={`${
+              contentType == 2 ? "" : " text-neutral-500 "
+            } font-semibold text-sm relative h-full  flex items-center `}
+          >
+            Following
+            <div
+              className={`${
+                contentType == 2 ? "block" : "hidden"
+              } absolute bottom-0 w-full h-1 bg-twitter rounded-full`}
+            ></div>
+          </div>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className=" border border-l-0 max-w-[600px] ">
@@ -69,76 +122,78 @@ export default function Feed() {
       >
         <div className="max-w-[600px] ">
           <FeedSelectionButtons />
-          <PostBox posts={data} setPosts={setData} />
-          {isLoading && <PostFeedSceleton />}
-          {!isLoading && <PostFeed posts={data} />}
+          {contentType == 1 && (
+            <>
+              <PostBox posts={posts} setPosts={setPosts} />
+              {isLoading && <PostFeedSceleton />}
+              {!isLoading && <PostFeed posts={posts} setPosts={setPosts} />}
+            </>
+          )}
+          {contentType == 2 && (
+            <>
+              <PostBox posts={followingPosts} setPosts={setFollowingPosts} />
+              {followingPosts.length == 0 && (
+                <>
+                  <div className="w-full mt-8 h-[600px] flex flex-col items-center">
+                    <span className="w-[300px] m-2  flex  font-bold text-2xl">
+                      Welcome to X Clone!
+                    </span>
+                    <span className="w-[300px]  flex text-sm text-gray-500">
+                      This is the best place to see what's happening in your
+                      world. Find some people and topics to follow now.
+                    </span>
+                  </div>
+                </>
+              )}
+              {followingPosts.length > 0 && (
+                <>
+                  {" "}
+                  {isLoading && <PostFeedSceleton />}
+                  {!isLoading && (
+                    <PostFeed
+                      posts={followingPosts}
+                      setPosts={setFollowingPosts}
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function FeedSelectionButtons() {
-  const [contentType, setContentType] = useState(1);
-  return (
-    <div className="sticky  top-0 z-10 max-w-[600px] w-full border-b-[1px] flex bg-white bg-opacity-10 backdrop-blur">
-      <button
-        onClick={() => {
-          setContentType(1);
-        }}
-        className="hover:bg-opacity-30 hover:backdrop-blur hover:bg-gray-300 transition duration-150  h-[53px] w-[50%] flex items-center justify-center"
-      >
-        <div
-          className={`${
-            contentType == 1 ? "" : " text-neutral-500 "
-          } font-semibold text-sm relative h-full  flex items-center `}
-        >
-          For you
-          <div
-            className={`${
-              contentType == 1 ? "block" : "hidden"
-            } absolute bottom-0 w-full h-1 bg-twitter rounded-full`}
-          ></div>
-        </div>
-      </button>
-      <button
-        onClick={() => {
-          setContentType(2);
-        }}
-        className="hover:bg-opacity-30 hover:backdrop-blur hover:bg-gray-300 transition duration-150  h-[53px] w-1/2 flex items-center justify-center "
-      >
-        <div
-          className={`${
-            contentType == 2 ? "" : " text-neutral-500 "
-          } font-semibold text-sm relative h-full  flex items-center `}
-        >
-          Following
-          <div
-            className={`${
-              contentType == 2 ? "block" : "hidden"
-            } absolute bottom-0 w-full h-1 bg-twitter rounded-full`}
-          ></div>
-        </div>
-      </button>
-    </div>
-  );
-}
-
-export function PostFeed({ posts }: { posts: any[] }) {
+export function PostFeed({ posts, setPosts }: { posts: any[]; setPosts: any }) {
   return (
     <div id="post-feed">
       {posts.map((post) => (
-        <PostComponent key={post.post_id} post={post} />
+        <PostComponent
+          key={post.post_id}
+          post={post}
+          posts={posts}
+          setPosts={setPosts}
+        />
       ))}
     </div>
   );
 }
 
-function PostComponent({ post }: { post: any }) {
+function PostComponent({
+  post,
+  posts,
+  setPosts,
+}: {
+  post: any;
+  posts: any[];
+  setPosts: any;
+}) {
   const [username, bookmarked, setBookmarked] = useContext(context);
   const router = useRouter();
   const [like_count, setLikeCount] = useState(parseInt(post.like_count));
   const [liked, setLiked] = useState(post.liked == 1);
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(
     bookmarked.has(post.post_id)
   );
@@ -165,7 +220,19 @@ function PostComponent({ post }: { post: any }) {
   );
   const parts = detailedTime.split(",");
   const reorderedDate = `${parts[2].trim()} · ${parts[0].trim()}, ${parts[1].trim()}`;
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (showDeleteButton && !event.target.closest(".my-element")) {
+        setShowDeleteButton(false);
+      }
+    };
 
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [showDeleteButton]);
   return (
     <div
       onClick={() => {
@@ -186,9 +253,9 @@ function PostComponent({ post }: { post: any }) {
           src={post.image as string}
         />
       </div>
-      <div className="w-full z-0  px-3">
+      <div className="w-full z-0  ">
         {/* header */}
-        <div className="flex text-sm gap-1">
+        <div className="relative flex text-sm gap-1 pl-3 ">
           <span
             onClick={(e) => {
               e.stopPropagation();
@@ -198,36 +265,77 @@ function PostComponent({ post }: { post: any }) {
           >
             {post.name}{" "}
           </span>
-          <MdVerified className="text-xl text-twitter" />
+          {post.verified && <MdVerified className="text-xl text-twitter" />}
 
           <span
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/${post.username}`);
             }}
-            className="text-gray-400 cursor-pointer"
+            className="text-gray-500 cursor-pointer"
           >
             {" "}
             @{post.username} ·{" "}
           </span>
-          <span className="relative group">
+          <span className="relative group text-gray-500 text-sm">
             {howRecent < 24
               ? howRecent + "h"
               : new Intl.DateTimeFormat("en-US", options).format(date)}
-            <div className="p-1 absolute bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4 -left-14 text-nowrap hidden group-hover:block">
+            <div className="p-1 absolute left-1/2 -translate-x-1/2  bg-black text-white z-3 text-xs bg-opacity-60 rounded-sm top-4  text-nowrap hidden group-hover:block">
               {reorderedDate}
             </div>
           </span>
+          {username == post.username && (
+            <div className="">
+              {showDeleteButton && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deletePost(post.post_id).then((res) => {
+                        if (res) {
+                          setPosts(
+                            posts.filter((p) => p.post_id != post.post_id)
+                          );
+                        }
+                      });
+                    }}
+                    className=" shadow-md ring-gray-400 absolute top-0 w-[150px] bg-white right-0 pr-6 pl-4 hover:bg-gray-200 transition duration-150 font-semibold z-30 py-2 rounded-xl border flex  items-center text-red-500 gap-2"
+                  >
+                    <HiOutlineTrash className=" text-lg" />
+                    Delete
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteButton(true);
+                }}
+                className="absolute z-0 transition duration-150  right-0 -translate-y-1/2 top-1/2  flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light "
+              >
+                <HiDotsHorizontal />
+              </button>
+            </div>
+          )}
+          {username != post.username && (
+            <>
+              <button className="transition duration-150 absolute right-0 -translate-y-1/2 top-1/2 cursor-not-allowed  flex justify-center items-center h-[32px] w-[32px] font-semibold text-sm rounded-full hover:bg-twitter-light ">
+                <HiDotsHorizontal />
+              </button>
+            </>
+          )}
         </div>
         {/* content */}
-        <div className="text-wrap break-all">{post.content}</div>
-        <div>
+        <div className="text-wrap break-all pl-3">{post.content}</div>
+        <div className="w-full  pl-3 py-2">
           {post.medialinks && post.medialinks[0] && (
             <div>
               {post.medialinks.map((link: string) => (
                 <Image
                   key={link}
-                  className="rounded-2xl w-full"
+                  className="rounded-2xl w-full "
                   alt="image"
                   width={4080}
                   height={4080}
@@ -239,7 +347,7 @@ function PostComponent({ post }: { post: any }) {
         </div>
 
         {/* footer */}
-        <div className=" h-[32px] grid grid-cols-5 justify-items-center items-center">
+        <div className=" h-[32px]  ml-3  flex gap-[19%] items-center">
           {/* replies */}
           <div>
             <FaComment />
@@ -268,11 +376,14 @@ function PostComponent({ post }: { post: any }) {
                 });
               }
             }}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 w-[40px] "
           >
             <GoHeart className={liked ? "hidden" : "block"} />
             <GoHeartFill className={liked ? "block" : "hidden"} />
-            <div id="likes" className="text-sm">
+            <div
+              id="likes"
+              className={`text-sm ${like_count == 0 ? "opacity-0" : ""}`}
+            >
               {like_count}
             </div>
           </button>
@@ -281,7 +392,7 @@ function PostComponent({ post }: { post: any }) {
             <IoStatsChart />
           </div>
           {/* bookmark & share */}
-          <div className="flex">
+          <div className="flex  gap-3">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -322,7 +433,7 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
   const [username] = useContext(context);
   const [showWhoCanReplyButton, setShowWhoCanReplyButton] = useState(false);
   const [postButtonDisabled, setPostButtonDisabled] = useState(true);
-
+  const [selectedFiles, setSelectedFiles] = useState([] as any[]);
   const initialState = { error: null, message: "" };
 
   const [state, formAction] = useFormState(createPost, initialState);
@@ -341,14 +452,11 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
   }, [state]);
 
   const uploadPhoto = (e: any) => {
-    const media = document.getElementById("media") as HTMLImageElement;
-    for (let i = 0; i < e.target.files.length; i++) {
-      const image = document.createElement("img");
-      image.src = URL.createObjectURL(e.target.files[i]);
-      image.className = "w-full rounded-2xl ";
-      media.appendChild(image);
-    }
+    setSelectedFiles([...e.target.files]);
   };
+  useEffect(() => {
+    console.log(selectedFiles);
+  }, [selectedFiles]);
   const handleUploadImage = (e: any) => {
     e.preventDefault();
     if (!showWhoCanReplyButton) {
@@ -391,14 +499,55 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
           ></input>
           <textarea
             id="text-area"
-            placeholder="What is happening?"
+            placeholder="What is happening?!"
             name="content"
             onFocus={() => setShowWhoCanReplyButton(true)}
             onInput={auto_grow}
             wrap="soft"
-            className=" w-full my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
+            className="placeholder:text-gray-600 w-full pl-2 my-2 placeholder:text-xl text-xl resize-none h-[30px] focus:outline-none overflow-hidden border-gray-300"
           ></textarea>
-          <div id="media"></div>
+          <div>
+            {selectedFiles.length > 0 &&
+              selectedFiles.map((file) => {
+                function CloseButton() {
+                  const router = useRouter();
+                  const handleClick = (e: any) => {
+                    e.preventDefault();
+                    const imageInput = document.getElementById(
+                      "uploadImage"
+                    ) as HTMLInputElement;
+                    const filtered = selectedFiles.filter(
+                      (f) => f.name != file.name
+                    );
+                    const newFileList = new DataTransfer();
+                    filtered.forEach((f) => {
+                      newFileList.items.add(f);
+                    });
+                    imageInput.files = newFileList.files;
+                    setSelectedFiles(filtered);
+                    console.log(imageInput.files);
+                  };
+                  return (
+                    <button
+                      onClick={handleClick}
+                      className="flex justify-center text-white bg-black bg-opacity-60 items-center w-10 h-10 absolute right-2 top-2 rounded-full hover:bg-opacity-80 hover:bg-gray-800 transition duration-200"
+                    >
+                      <AiOutlineClose />
+                    </button>
+                  );
+                }
+                return (
+                  <div className="relative">
+                    <CloseButton />
+                    <img
+                      className="rounded-2xl"
+                      key={file.name}
+                      src={URL.createObjectURL(file)}
+                    />
+                  </div>
+                );
+              })}
+          </div>
           <div
             className={` ${
               showWhoCanReplyButton ? "block" : "hidden"
