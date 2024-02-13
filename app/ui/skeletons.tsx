@@ -3,7 +3,12 @@ import Image from "next/image";
 export function LoginSceleton() {
   return (
     <div className="flex flex-col h-[644px] w-[600px]  bg-white rounded-2xl justify-center items-center">
-      <Image src="/loading-gif.gif" alt="loading" height={50} width={50} />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/twitter-clone-6871c.appspot.com/o/images%2Fpublic%2Floading-gif.gif?alt=media&token=4c64e6b4-927b-47c2-b234-4fb165a37c63"
+        alt="loading"
+        height={50}
+        width={50}
+      />
     </div>
   );
 }

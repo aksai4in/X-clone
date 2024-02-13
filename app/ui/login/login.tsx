@@ -51,6 +51,7 @@ export default function Login() {
   };
   const login = async (e: any) => {
     e.preventDefault();
+    setLoading(true);
     await signIn("credentials", {
       email: email,
       password: password,

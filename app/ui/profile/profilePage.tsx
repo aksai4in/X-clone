@@ -89,14 +89,16 @@ export default function ProfilePage({
         <img
           src={user.profile_photo ? user.profile_photo : "/gray.png"}
           alt={"image"}
-          className="w-full  object-cover"
+          className="w-full h-[200px] object-cover"
         ></img>
-        <Avatar
-          sx={{ width: 134, height: 134 }}
-          alt="avatar"
-          className="absolute left-4 top-[133px] border-4 border-white"
-          src={user.image as string}
-        />
+        <div className="top-[133px] w-[133px] h-[133px] absolute left-4">
+          <Avatar
+            alt="avatar"
+            className="object-cover w-[133px] h-[133px]  border-4 border-white"
+            src={user.image as string}
+          />
+        </div>
+
         <div className="border w-full h-16 pr-4 gap-2 flex justify-end items-center">
           {username != params.username && (
             <>

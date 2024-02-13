@@ -18,7 +18,9 @@ export default function LoginPage() {
       <div className="flex flex-row flex-grow items-center justify-center">
         <div className="md:flex-grow flex justify-center items-center">
           <Image
-            src={"/X-Logo.png"}
+            src={
+              "https://firebasestorage.googleapis.com/v0/b/twitter-clone-6871c.appspot.com/o/images%2Fpublic%2FX-Logo.png?alt=media&token=3cd9790c-c99f-4ca6-adc5-a98a6573a99e"
+            }
             className="hidden md:block"
             alt={"x logo"}
             width={355}
