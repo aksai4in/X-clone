@@ -93,8 +93,9 @@ export default function ProfilePage({
         ></img>
         <div className="top-[133px] w-[133px] h-[133px] absolute left-4">
           <Avatar
+            sx={{ width: 133, height: 133 }}
             alt="avatar"
-            className="object-cover w-[133px] h-[133px]  border-4 border-white"
+            className="object-cover  border-4 border-white"
             src={user.image as string}
           />
         </div>
