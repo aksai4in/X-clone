@@ -139,8 +139,8 @@ export default function Feed() {
                       Welcome to X Clone!
                     </span>
                     <span className="w-[300px]  flex text-sm text-gray-500">
-                      This is the best place to see what's happening in your
-                      world. Find some people and topics to follow now.
+                      {`This is the best place to see what's happening in your
+                      world. Find some people and topics to follow now.`}
                     </span>
                   </div>
                 </>
@@ -537,11 +537,10 @@ function PostBox({ posts, setPosts }: { posts: any[]; setPosts: any }) {
                   );
                 }
                 return (
-                  <div className="relative">
+                  <div className="relative" key={file.name}>
                     <CloseButton />
                     <img
                       className="rounded-2xl"
-                      key={file.name}
                       src={URL.createObjectURL(file)}
                     />
                   </div>
