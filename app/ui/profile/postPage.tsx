@@ -153,8 +153,7 @@ export default function PostPage({
                 }}
                 className=" text-gray-600 cursor-pointer"
               >
-                {" "}
-                @{post.username}
+                {post.username && <>@{post.username}</>}
               </span>
               {username == post.username && (
                 <div className="">
