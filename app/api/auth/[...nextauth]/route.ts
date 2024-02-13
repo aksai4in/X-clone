@@ -6,9 +6,9 @@ import { sql } from "@vercel/postgres";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
-async function getUser(email: string): Promise<User | undefined> {
+async function getUser(email: string): Promise<any> {
   try {
-    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    const user = await sql<any>`SELECT * FROM users WHERE email=${email}`;
     return user.rows[0];
   } catch (error) {
     console.error("Failed to fetch user:", error);
@@ -53,7 +53,6 @@ const authOptions: AuthOptions = {
           console.log(user);
           if (passwordsMatch) return user;
         }
-        console.log("Invalid credentials");
         return null;
       },
     }),
