@@ -52,7 +52,7 @@ export default function ProfilePage({
         }
       });
     }
-    getUserPosts(params.username).then((res) => {
+    getUserPosts(username).then((res) => {
       setPosts(res);
       setLoadingPosts(false);
     });
