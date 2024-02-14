@@ -136,10 +136,7 @@ export default function ProfilePage({
           )}
           {username == params.username && (
             <>
-              <button
-                onClick={follow}
-                className="h-[32px] px-4 font-semibold text-sm rounded-full border hover:bg-gray-200 transition duration-150"
-              >
+              <button className="h-[32px] px-4 font-semibold text-sm rounded-full border hover:bg-gray-200 transition duration-150">
                 Edit profile
               </button>
             </>
